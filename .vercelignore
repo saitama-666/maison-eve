@@ -1,0 +1,32 @@
+# Ce qui ne doit JAMAIS partir chez Vercel.
+#
+# Vercel installe les dependances et compile lui-meme : envoyer le resultat
+# d'un build local ne sert a rien, et coute cher. Sans ce fichier, le
+# televersement pesait 305 Mo — dont 327 Mo de `.next` et 797 Mo de
+# `node_modules` a la source.
+
+node_modules
+.next
+.next-verif
+out
+build
+
+# Secrets et etat local — deja couverts par .gitignore, repetes ici parce
+# que `.vercelignore`, quand il existe, remplace `.gitignore` aux yeux du
+# CLI : tout ce qui n'est pas liste redevient televersable.
+.env
+.env*.local
+serviceAccountKey.json
+*.pem
+
+# Outils et caches
+.git
+.firebase
+firebase-debug.log
+firestore-debug.log
+*.tsbuildinfo
+.vercel
+
+# Fichiers de travail
+.DS_Store
+npm-debug.log*
