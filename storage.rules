@@ -1,0 +1,56 @@
+rules_version = '2';
+
+// =====================================================================
+//  MAISON EVE — règles Cloud Storage
+//
+//  Storage exige le plan Blaze. Tant qu'il n'est pas activé, les visuels
+//  vivent dans `public/` et ces règles ne servent à rien — mais elles sont
+//  déjà écrites pour que l'activation ne se fasse pas « en ouvert ».
+// =====================================================================
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    function isImage() {
+      return request.resource.contentType.matches('image/(jpeg|png|webp|avif)');
+    }
+
+    function underSize(mb) {
+      return request.resource.size < mb * 1024 * 1024;
+    }
+
+    // Visuels de soins, journal, galerie : lecture publique, dépôt admin.
+    match /services/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() && isImage() && underSize(5);
+    }
+
+    match /journal/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() && isImage() && underSize(5);
+    }
+
+    match /galerie/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() && isImage() && underSize(5);
+    }
+
+    // Photo de profil : chacun la sienne, personne d'autre.
+    match /users/{uid}/{allPaths=**} {
+      allow read: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if isSignedIn() && request.auth.uid == uid && isImage() && underSize(2);
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

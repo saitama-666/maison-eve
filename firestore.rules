@@ -1,0 +1,396 @@
+rules_version = '2';
+
+// =====================================================================
+//  MAISON EVE — règles de sécurité Firestore
+//
+//  Modèle : TOUT est refusé par défaut. Chaque collection ouvre le strict
+//  minimum et valide la FORME des données écrites, pas seulement le droit
+//  d'écrire. Une règle qui dit « le propriétaire peut écrire » sans
+//  vérifier le contenu laisse passer un document de 900 Ko contenant un
+//  champ `admin: true`.
+//
+//  Principes appliqués :
+//   1. AUCUNE donnée bancaire n'entre dans Firestore (voir noPaymentData).
+//      L'adresse de FACTURATION est une adresse postale — pas une carte.
+//   2. Le catalogue de soins est en lecture publique, écriture admin.
+//   3. Un client ne touche jamais que ses propres documents.
+//   4. Les réservations sont créées côté SERVEUR (Admin SDK), qui recalcule
+//      le prix depuis le catalogue. Le client ne peut que LIRE les siennes
+//      et demander une annulation. Ça rend impossible de forger un tarif.
+//   5. Les champs sensibles (role, admin, statut, prix, uid) ne sont jamais
+//      modifiables par le client.
+// =====================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------------------------------------------------------
+    //  Helpers
+    // ---------------------------------------------------------------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isUser(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Le rôle admin est un CUSTOM CLAIM posé par scripts/set-admin.mjs.
+    // Il vit dans le jeton signé par Firebase : impossible à forcer depuis
+    // le navigateur, contrairement à un champ `isAdmin` dans un document.
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function stored() {
+      return resource.data;
+    }
+
+    // Le document n'a QUE ces clés — aucun champ surprise.
+    function onlyKeys(keys) {
+      return incoming().keys().hasOnly(keys);
+    }
+
+    // Le document contient AU MOINS ces clés.
+    function hasKeys(keys) {
+      return incoming().keys().hasAll(keys);
+    }
+
+    function isText(value, maxLen) {
+      return value is string && value.size() > 0 && value.size() <= maxLen;
+    }
+
+    // ⚠️  TOUJOURS appeler ces fonctions avec `incoming().get('champ', null)`,
+    //     JAMAIS avec `incoming().champ`.
+    //
+    //     En langage de regles, lire une cle ABSENTE d'un map ne rend pas
+    //     `null` : c'est une erreur d'evaluation, et elle fait echouer la
+    //     regle entiere. Ecrit `isOptionalText(incoming().phone, 30)`, un
+    //     document qui n'a pas de `phone` est REFUSE — alors que le champ
+    //     est justement facultatif.
+    //
+    //     C'est ce qui empechait toute creation de profil client : le
+    //     formulaire d'inscription n'envoie ni `phone` ni `birthday`.
+    function isOptionalText(value, maxLen) {
+      return value == null || (value is string && value.size() <= maxLen);
+    }
+
+    function isEmail(value) {
+      return value is string
+        && value.size() <= 254
+        && value.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$');
+    }
+
+    // Format permissif volontairement : le site sert le Maroc, la France et
+    // la diaspora. On refuse les lettres, pas les indicatifs.
+    function isPhone(value) {
+      return value is string
+        && value.size() >= 6
+        && value.size() <= 24
+        && value.matches('^[+0-9][0-9 ()./-]{5,23}$');
+    }
+
+    function isOptionalPhone(value) {
+      return value == null || isPhone(value);
+    }
+
+    function unchanged(field) {
+      return incoming()[field] == stored()[field];
+    }
+
+    // Garde-fou absolu : aucun moyen de paiement ne doit être persisté,
+    // nulle part, jamais. Cette fonction est appelée sur TOUTE écriture
+    // client, y compris les adresses de facturation — c'est justement là
+    // que quelqu'un serait tenté de coller un numéro de carte.
+    function noPaymentData() {
+      return !incoming().keys().hasAny([
+        'cardNumber', 'card_number', 'pan', 'cvv', 'cvc', 'cardCvc',
+        'securityCode', 'expiry', 'expMonth', 'expYear', 'cardholderName',
+        'iban', 'rib', 'bic', 'swift', 'accountNumber', 'sortCode',
+        'paymentToken', 'stripeToken'
+      ]);
+    }
+
+    // Le timestamp vient du serveur, pas du client : sinon un client
+    // antidate ses documents et fausse tous les tris.
+    function serverTime(field) {
+      return incoming()[field] == request.time;
+    }
+
+    // Adresse postale — utilisée pour la FACTURATION et pour le lieu du
+    // soin à domicile. Champs bornés en longueur : sans ça on stocke des
+    // romans, et on les paie.
+    function isValidAddress() {
+      return onlyKeys([
+          'label', 'type', 'firstName', 'lastName', 'phone',
+          'line1', 'line2', 'city', 'postalCode', 'region', 'country',
+          'isDefaultBilling', 'isDefaultService', 'notes',
+          'createdAt', 'updatedAt'
+        ])
+        && hasKeys(['type', 'firstName', 'lastName', 'phone', 'line1', 'city', 'country'])
+        && incoming().type in ['facturation', 'soin', 'les-deux']
+        && isOptionalText(incoming().get('label', null), 40)
+        && isText(incoming().firstName, 60)
+        && isText(incoming().lastName, 60)
+        && isPhone(incoming().phone)
+        && isText(incoming().line1, 160)
+        && isOptionalText(incoming().get('line2', null), 160)
+        && isText(incoming().city, 80)
+        && isOptionalText(incoming().get('postalCode', null), 16)
+        && isOptionalText(incoming().get('region', null), 80)
+        && isText(incoming().country, 60)
+        && incoming().isDefaultBilling is bool
+        && incoming().isDefaultService is bool
+        && isOptionalText(incoming().get('notes', null), 400)
+        && noPaymentData();
+    }
+
+
+    // ---------------------------------------------------------------
+    //  CATALOGUE DE SOINS — lecture publique, écriture admin
+    // ---------------------------------------------------------------
+    match /services/{serviceId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /journal/{postId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Réglages vitrine : bandeau, horaires, coordonnées.
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Créneaux ouverts à la réservation. Lecture publique pour afficher le
+    // calendrier ; seul l'admin (ou le serveur) les modifie.
+    match /availability/{dayId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+
+    // ---------------------------------------------------------------
+    //  AVIS CLIENTS
+    //
+    //  Lecture publique. Un client connecté écrit son propre avis, une
+    //  seule fois par soin : l'id du document est imposé à
+    //  "{uid}_{serviceId}", donc un deuxième avis remplace le premier au
+    //  lieu de spammer la fiche.
+    //
+    //  Un avis n'est PUBLIÉ que si `published == true`, drapeau que seul
+    //  l'admin peut poser. Personne ne se publie soi-même.
+    // ---------------------------------------------------------------
+    match /reviews/{reviewId} {
+      allow read: if true;
+
+      allow create: if isAdmin() || (
+        isUser(incoming().userId)
+        && reviewId == request.auth.uid + '_' + incoming().serviceId
+        && onlyKeys(['userId', 'userName', 'serviceId', 'rating', 'title', 'body', 'published', 'createdAt'])
+        && hasKeys(['userId', 'userName', 'serviceId', 'rating', 'body', 'published', 'createdAt'])
+        && isText(incoming().serviceId, 80)
+        && isText(incoming().userName, 60)
+        && isOptionalText(incoming().get('title', null), 120)
+        && isText(incoming().body, 2000)
+        && incoming().rating is int
+        && incoming().rating >= 1
+        && incoming().rating <= 5
+        && incoming().published == false
+        && serverTime('createdAt')
+        && noPaymentData()
+      );
+
+      allow update: if isAdmin() || (
+        isUser(stored().userId)
+        && unchanged('userId')
+        && unchanged('serviceId')
+        && unchanged('createdAt')
+        && unchanged('published')
+        && incoming().rating is int
+        && incoming().rating >= 1
+        && incoming().rating <= 5
+        && isText(incoming().body, 2000)
+        && noPaymentData()
+      );
+
+      allow delete: if isAdmin() || isUser(stored().userId);
+    }
+
+
+    // ---------------------------------------------------------------
+    //  COMPTES CLIENTS
+    //
+    //  Le profil est créé par le client à l'inscription, mais il ne peut y
+    //  mettre que des champs de profil. Ni `role`, ni `admin`, ni `credit` :
+    //  ces clés ne sont pas dans la liste blanche, donc toute tentative
+    //  fait échouer l'écriture ENTIÈRE.
+    // ---------------------------------------------------------------
+    match /users/{uid} {
+      allow read: if isUser(uid) || isAdmin();
+
+      allow create: if isUser(uid)
+        && onlyKeys(['firstName', 'lastName', 'email', 'phone', 'birthday',
+                     'marketingOptIn', 'createdAt', 'updatedAt'])
+        && hasKeys(['email', 'createdAt'])
+        && isEmail(incoming().email)
+        // L'email du document doit être celui du compte : sinon un client
+        // se fabrique un profil au nom de quelqu'un d'autre.
+        && incoming().email == request.auth.token.email
+        && isOptionalText(incoming().get('firstName', null), 60)
+        && isOptionalText(incoming().get('lastName', null), 60)
+        && isOptionalPhone(incoming().get('phone', null))
+        && isOptionalText(incoming().get('birthday', null), 10)
+        && (incoming().get('marketingOptIn', null) == null || incoming().marketingOptIn is bool)
+        && serverTime('createdAt')
+        && noPaymentData();
+
+      allow update: if isUser(uid)
+        && onlyKeys(['firstName', 'lastName', 'email', 'phone', 'birthday',
+                     'marketingOptIn', 'createdAt', 'updatedAt'])
+        && unchanged('createdAt')
+        // L'email suit le compte Auth, il ne se change pas ici.
+        && unchanged('email')
+        && isOptionalText(incoming().get('firstName', null), 60)
+        && isOptionalText(incoming().get('lastName', null), 60)
+        && isOptionalPhone(incoming().get('phone', null))
+        && isOptionalText(incoming().get('birthday', null), 10)
+        && (incoming().get('marketingOptIn', null) == null || incoming().marketingOptIn is bool)
+        && serverTime('updatedAt')
+        && noPaymentData();
+
+      // Pas de suppression côté client : supprimer un compte passe par une
+      // demande, pour ne pas orpheliner les réservations passées.
+      allow delete: if false;
+
+      // --- Carnet d'adresses ------------------------------------------
+      //  Adresse de FACTURATION et adresse d'intervention pour les soins à
+      //  domicile. Aucune donnée bancaire : `noPaymentData()` est appelée
+      //  depuis `isValidAddress()`.
+      match /addresses/{addressId} {
+        allow read: if isUser(uid) || isAdmin();
+
+        allow create: if isUser(uid)
+          && isValidAddress()
+          && serverTime('createdAt');
+
+        allow update: if isUser(uid)
+          && isValidAddress()
+          && unchanged('createdAt')
+          && serverTime('updatedAt');
+
+        allow delete: if isUser(uid);
+      }
+
+      // --- Favoris ------------------------------------------------------
+      match /favorites/{serviceId} {
+        allow read: if isUser(uid) || isAdmin();
+        allow create, update: if isUser(uid)
+          && onlyKeys(['serviceId', 'createdAt'])
+          && isText(incoming().serviceId, 80)
+          && serverTime('createdAt');
+        allow delete: if isUser(uid);
+      }
+    }
+
+
+    // ---------------------------------------------------------------
+    //  RÉSERVATIONS
+    //
+    //  `create: if false` est VOLONTAIRE et ne doit pas être « réparé ».
+    //  Les réservations naissent uniquement dans POST /api/reservations,
+    //  qui tourne avec l'Admin SDK (lequel contourne ces règles) et
+    //  recalcule le prix depuis le catalogue serveur. Si le client pouvait
+    //  créer le document, il choisirait son prix.
+    //
+    //  Le client peut LIRE les siennes et demander une annulation — rien
+    //  d'autre. L'annulation ne touche que deux champs, et seulement depuis
+    //  un statut annulable.
+    // ---------------------------------------------------------------
+    match /reservations/{reservationId} {
+      allow read: if isAdmin() || (isSignedIn() && stored().userId == request.auth.uid);
+
+      allow create: if false;
+
+      allow update: if isAdmin()
+        || (
+          isSignedIn()
+          && stored().userId == request.auth.uid
+          && incoming().diff(stored()).affectedKeys().hasOnly(['status', 'cancelledAt'])
+          && incoming().status == 'annulee'
+          && stored().status in ['en-attente', 'confirmee']
+          && serverTime('cancelledAt')
+        );
+
+      allow delete: if isAdmin();
+    }
+
+
+    // ---------------------------------------------------------------
+    //  MESSAGES DU FORMULAIRE DE CONTACT
+    //
+    //  Écriture ouverte — un visiteur non connecté doit pouvoir écrire —
+    //  mais la forme est verrouillée et la LECTURE est réservée à l'admin :
+    //  personne ne vient lire les messages des autres.
+    //
+    //  L'anti-spam sérieux (App Check + limitation de débit) se fait dans la
+    //  route API. Ces règles empêchent seulement d'écrire n'importe quoi.
+    // ---------------------------------------------------------------
+    match /messages/{messageId} {
+      allow read: if isAdmin();
+
+      allow create: if onlyKeys(['name', 'email', 'phone', 'subject', 'message',
+                                 'status', 'userId', 'createdAt'])
+        && hasKeys(['name', 'email', 'message', 'status', 'createdAt'])
+        && isText(incoming().name, 80)
+        && isEmail(incoming().email)
+        && isOptionalPhone(incoming().get('phone', null))
+        && isOptionalText(incoming().get('subject', null), 140)
+        && isText(incoming().message, 4000)
+        && incoming().status == 'nouveau'
+        && (incoming().get('userId', null) == null || incoming().userId == request.auth.uid)
+        && serverTime('createdAt')
+        && noPaymentData();
+
+      allow update, delete: if isAdmin();
+    }
+
+
+    // ---------------------------------------------------------------
+    //  INSCRIPTIONS À LA LETTRE
+    //  Id du document = email en minuscules : une adresse ne peut pas
+    //  s'inscrire deux fois, et personne ne peut lire la liste.
+    // ---------------------------------------------------------------
+    match /newsletter/{emailId} {
+      allow read: if isAdmin();
+      allow create: if onlyKeys(['email', 'source', 'createdAt'])
+        && isEmail(incoming().email)
+        && emailId == incoming().email.lower()
+        && isOptionalText(incoming().get('source', null), 40)
+        && serverTime('createdAt');
+      allow update, delete: if isAdmin();
+    }
+
+
+    // ---------------------------------------------------------------
+    //  Tout le reste est refusé. C'est cette règle finale qui fait qu'une
+    //  collection ajoutée sans être ouverte ici reste inaccessible —
+    //  comportement voulu, pas un oubli.
+    // ---------------------------------------------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

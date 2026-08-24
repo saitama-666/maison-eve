@@ -1,0 +1,1036 @@
+@import 'tailwindcss';
+
+/* =====================================================================
+   Chemin de scan figé.
+
+   Tailwind v4 détecte tout seul les fichiers à scanner, en partant du
+   DOSSIER DE TRAVAIL du processus. Or ce site vit dans `projects/site 2`,
+   à côté d'un autre projet, et il peut être lancé depuis un dossier
+   parent (`next dev "chemin/vers/site 2"`). Dans ce cas, la détection
+   automatique regarderait le mauvais dossier.
+
+   `@source` fige le chemin relativement à CE fichier : le dossier de
+   travail du processus n'a plus aucune influence. C'est une précaution,
+   pas la correction d'un incident.
+   ===================================================================== */
+@source '../**/*.{ts,tsx,mdx}';
+
+/* =====================================================================
+   MAISON EVE — Beauty & Spa · jetons de design
+
+   Palette tirée de la maquette : moka chaud en fond de page, crème et
+   blanc pour les sections de contenu, champagne pour l'accent, espresso
+   pour le texte. Le site est CLAIR par principe — un spa se lit en plein
+   jour, et le clair porte mieux la sensation de propreté et de calme.
+
+   Tout est en variables. Aucune couleur ne doit être écrite en dur dans
+   un composant : une valeur en dur échappe aux jetons et devient
+   impossible à corriger d'un seul endroit.
+   ===================================================================== */
+
+@theme {
+  /* --- fonds --------------------------------------------------------
+     `shell` est le moka qui encadre la page. `canvas` est le crème des
+     sections. `card` est le blanc des cartes posées sur le crème.
+     Trois profondeurs, jamais plus : au-delà, la page perd sa hiérarchie. */
+  --color-shell: #6f5f52;
+  --color-shelldeep: #574a40;
+  --color-shellsoft: #8a7869;
+  --color-canvas: #f6f1ea;
+  /* Legerement eclairci (#efe7dc -> #f1eae0). C'est le fond creme le PLUS
+     SOMBRE du site, donc c'est lui qui fixe le plancher de lisibilite pour
+     tout le texte gris. A l'ancienne valeur, `muted` n'y donnait que 4,24
+     — sous le seuil AA — dans toutes les sections alternees. */
+  --color-canvas2: #f1eae0;
+  --color-card: #ffffff;
+  --color-line: #e2d8cb;
+  --color-linesoft: #eee7dd;
+
+  /* --- espresso : l'echelle de texte -------------------------------
+     QUATRE niveaux, recalcules ensemble. Deux regles tenues :
+
+     1. Chacun passe AA (4,5) sur les TROIS fonds clairs — `canvas`,
+        `canvas2` et `card`. Le plus sombre des trois fixe le plancher :
+        il est inutile qu'un gris passe sur le blanc s'il echoue sur le
+        creme des sections alternees, ou il sert tout autant.
+
+     2. La hierarchie est preservee : chaque niveau reste visiblement
+        plus clair que le precedent.
+
+     Un correctif precedent avait assombri `faint` seul, sans regarder le
+     reste : il etait devenu PLUS FONCE que `muted`, ce qui inversait la
+     hierarchie. D'ou ce recalcul d'ensemble.
+
+       ink      12,65 / 11,90 / 14,21   titres, texte principal
+       inksoft   7,36 /  6,92 /  8,27   corps de texte long
+       muted     5,94 /  5,59 /  6,67   texte secondaire
+       faint     4,83 /  4,55 /  5,43   mentions discretes (plancher AA)
+                (canvas / canvas2 / card) */
+  --color-ink: #33291f;
+  --color-inksoft: #5a4c3f;
+  --color-muted: #675a4d;
+  --color-faint: #776759;
+
+  /* --- champagne : l'accent ----------------------------------------
+     ASSOMBRI de #a8834e a #7d5925 apres mesure. L'ancienne valeur tombait
+     a 2,51 de contraste sur `champagnepale` — une combinaison pourtant
+     utilisee telle quelle (badges, pastille d'avatar, encart FAQ) — et a
+     3,10 sur le creme, insuffisant pour `.surtitre` qui est du 11 px.
+
+     Assombrir ameliore les DEUX usages a la fois, donc il n'y a aucun
+     arbitrage a faire :
+       · en texte sur creme    2,51 -> 4,55  (AA)
+       · en fond, blanc dessus 3,49 -> 6,31  (AA large marge)
+     C'est exactement la lecon de l'autre projet : une couleur d'accent
+     ne peut pas etre a la fois claire et servir de fond a du texte clair.
+     La saturation a ete remontee en compensation, pour garder l'or chaud
+     plutot que de virer au brun.
+
+     `surchampagne` reste le jeton du texte POSE SUR un aplat champagne.
+     Ne jamais remettre `text-ink` sur un aplat dore. */
+  --color-champagne: #7d5925;
+  /* `champagnesoft` est l'or POSE SUR FOND SOMBRE (moka, photos voilees).
+     Il etait a #c9a877, qui ne donnait que 2,72 sur le moka — sous le
+     seuil de 3,0, donc illisible meme en gros. Eclairci a saturation
+     maximale pour rester franchement dore et ne pas se confondre avec le
+     creme : 4,53 sur le moka, 6,33 sur le moka profond. */
+  --color-champagnesoft: #ffd89d;
+  /* `champagnepale` sert DEUX fois : en aplat clair (badges, pastilles)
+     et en petit texte sur le moka. Legerement eclairci pour passer 4,5
+     dans les deux cas — 4,53 sur le moka, et le champagne pose dessus
+     monte de 4,55 a 4,67. */
+  --color-champagnepale: #eadcc6;
+  --color-surchampagne: #ffffff;
+
+  /* --- textes posés SUR le moka ------------------------------------ */
+  --color-oncream: #f7f2ec;
+  --color-onshell: #f4ede4;
+  --color-onshellmuted: #d8cabb;
+
+  /* --- accents d'état ---------------------------------------------- */
+  --color-sage: #6f7f62;
+  --color-rose: #b98a86;
+  --color-danger: #b4423a;
+  /* `success` et `warning` assombris : 4,33 et 3,30 sur creme, tous deux
+     sous 4,5. Ils portent du texte de 14 px dans les encarts. */
+  --color-success: #487244;
+  --color-warning: #8a6020;
+
+  /* --- typographie -------------------------------------------------- */
+  --font-display: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
+  --font-script: var(--font-parisienne), 'Parisienne', 'Cormorant Garamond', cursive;
+  --font-sans: var(--font-jost), 'Jost', ui-sans-serif, system-ui, sans-serif;
+
+  /* --- rayons ------------------------------------------------------- */
+  --radius-xs: 2px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 18px;
+  --radius-xl: 28px;
+  --radius-2xl: 40px;
+
+  /* --- ombres --------------------------------------------------------
+     Chaudes, jamais grises : une ombre neutre sur un fond crème vire au
+     sale. Le noir est teinté de brun. */
+  --shadow-soft: 0 14px 40px -20px rgb(51 41 31 / 0.28);
+  --shadow-lift: 0 26px 60px -26px rgb(51 41 31 / 0.38);
+  --shadow-deep: 0 40px 90px -40px rgb(51 41 31 / 0.5);
+  --shadow-ring: 0 0 0 1px rgb(168 131 78 / 0.22);
+
+  /* --- courbes « snappy » --------------------------------------------
+     Ces trois-là couvrent tout le site. `out-expo` démarre vite et se
+     pose : c'est ce qui donne la sensation de réactivité. */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-back: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+
+  /* --- animations nommées -------------------------------------------- */
+  --animate-marquee: marquee 42s linear infinite;
+  --animate-marquee-reverse: marquee-reverse 42s linear infinite;
+  --animate-float: float 8s ease-in-out infinite;
+  --animate-breathe: breathe 5.5s ease-in-out infinite;
+  --animate-spin-slow: spin 26s linear infinite;
+  --animate-shimmer: shimmer 2.6s var(--ease-out-expo) infinite;
+  --animate-pulse-ring: pulse-ring 2.8s var(--ease-out-expo) infinite;
+}
+
+/* =====================================================================
+   Thème sombre — RÉSERVÉ AU BACK-OFFICE.
+
+   La vitrine reste claire : le crème et le champagne SONT l'identité de
+   la marque. Un back-office, lui, se consulte des heures d'affilée,
+   souvent le soir.
+
+   On ne redéfinit QUE des variables : toutes les classes du site
+   (`bg-card`, `text-ink`, `border-line`…) suivent automatiquement. Aucune
+   classe conditionnelle nulle part, aucun `dark:` à maintenir.
+
+   Contraintes tenues, mesurées :
+    · `surchampagne` s'inverse avec `champagne`. Le champagne ne peut pas
+      être à la fois lisible sur fond sombre ET servir de fond à du texte
+      clair — sans ce jeton, l'arbitrage est impossible.
+    · `canvas` (fond de page) est distinct de `ink`, qui reste sombre et
+      ne sert plus qu'au voile des fenêtres modales.
+    · Toute couleur écrite en dur dans un composant échapperait à ce bloc.
+      C'est pourquoi aucune ne l'est.
+   ===================================================================== */
+
+[data-admin-theme='sombre'] {
+  --color-canvas: #171310;
+  --color-canvas2: #1f1a16;
+  --color-card: #221c18;
+  --color-line: #322a24;
+  --color-linesoft: #2a231e;
+
+  --color-shell: #100d0b;
+  --color-shelldeep: #0b0908;
+  --color-shellsoft: #2a231e;
+
+  /* `ink` reste sombre : il ne sert plus qu'au voile des modales. */
+  --color-ink: #f2ebe2;
+  --color-inksoft: #d9cec1;
+  --color-muted: #a29485;
+  /* Eclairci (#7d7166 -> #8f8276) : sur les surfaces sombres du
+     back-office il ne donnait que 3,55 a 3,89, sous le seuil AA. Il reste
+     nettement plus sombre que `muted` (#a29485), donc la hierarchie tient.
+     Mesure : canvas 4,94 · canvas2 4,62 · card 4,51. */
+  --color-faint: #8f8276;
+
+  /* Le champagne pâle du thème clair devient trop clair sur fond sombre
+     pour servir d'aplat : on l'éclaircit en texte et on inverse le jeton
+     du texte posé dessus. */
+  --color-champagne: #d0ab74;
+  --color-champagnesoft: #e0c69a;
+  --color-champagnepale: #3a2f22;
+  --color-surchampagne: #171310;
+
+  --color-oncream: #171310;
+  --color-onshell: #f2ebe2;
+  --color-onshellmuted: #a29485;
+
+  --color-sage: #8fa47f;
+  --color-rose: #d4a29e;
+  --color-danger: #e0736a;
+  --color-success: #7fb377;
+  --color-warning: #d9a04a;
+
+  /* Les ombres chaudes du thème clair disparaissent sur fond sombre :
+     on les remplace par du noir franc, sinon les cartes flottent sans
+     être détachées du fond. */
+  --shadow-soft: 0 14px 40px -20px rgb(0 0 0 / 0.6);
+  --shadow-lift: 0 26px 60px -26px rgb(0 0 0 / 0.7);
+  --shadow-deep: 0 40px 90px -40px rgb(0 0 0 / 0.8);
+}
+
+/* Le fond de page suit le thème du back-office. */
+[data-admin-theme] body {
+  background-color: var(--color-canvas);
+}
+
+/* =====================================================================
+   Réinitialisation et bases
+   ===================================================================== */
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    /* Lenis a été retiré (voir le commentaire dans `app/layout.tsx`). Le
+       défilement doux natif reprend donc la main pour les ancres : il est
+       géré par le compositeur, pas par du JavaScript sur le fil principal.
+
+       `scroll-padding-top` évite que l'en-tête fixe recouvre le titre
+       visé — c'est ce que faisait le décalage manuel de Lenis. */
+    scroll-behavior: smooth;
+    scroll-padding-top: 6rem;
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--color-shell);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    font-size: 1rem;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 300;
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Anneau de focus unique pour tout le site. Visible, chaud, jamais le
+     bleu par défaut du navigateur qui jure avec la palette. */
+  :focus-visible {
+    outline: 2px solid var(--color-champagne);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background-color: var(--color-champagnepale);
+    color: var(--color-ink);
+  }
+
+  /* Les images ne débordent jamais de leur conteneur. */
+  img, svg, video {
+    display: block;
+    max-width: 100%;
+  }
+
+  /* Chiffres alignés dans les tableaux de prix et les compteurs :
+     sans ça les colonnes de tarifs dansent. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* =====================================================================
+   Barre de défilement — accordée à la palette
+   ===================================================================== */
+
+@layer base {
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-canvas2);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-shellsoft);
+    border-radius: 999px;
+    border: 2px solid var(--color-canvas2);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-shell);
+  }
+  html {
+    scrollbar-color: var(--color-shellsoft) var(--color-canvas2);
+    scrollbar-width: thin;
+  }
+}
+
+/* =====================================================================
+   ARRIVÉE — l'entrée en scène du bandeau de titre.
+
+   Écrite en CSS pur, volontairement sans JavaScript : c'est le texte le
+   plus important de la page. Il ne doit pas rester à `opacity: 0` en
+   attendant qu'une librairie d'animation ait fini de démarrer. La
+   cascade se fait par `:nth-child`, sans classe à poser sur chaque
+   enfant.
+   ===================================================================== */
+
+@layer components {
+  /*
+    ⚠️  L'ARRIVÉE N'ANIME QUE LA POSITION. JAMAIS L'OPACITÉ.
+
+    C'est la règle la plus importante de ce fichier, et elle vient d'un
+    vrai retour : « les boutons ne mènent vers aucune page ». En réalité
+    la navigation fonctionnait — mais le contenu de la page d'arrivée
+    était à `opacity: 0`, en attente d'une animation. Écran blanc.
+
+    Toute animation qui part de `opacity: 0` fait dépendre la LISIBILITÉ
+    d'un mécanisme qui peut ne pas se jouer : onglet en arrière-plan au
+    moment du montage, moteur qui gèle les animations, économie d'énergie.
+    Le pire scénario est alors une page vide — c'est-à-dire un site cassé.
+
+    Ici, le seul état de départ est un décalage de 14 px. Si l'animation
+    ne se joue pas, le texte est lisible, simplement 14 px plus bas :
+    personne ne le remarque. La dégradation est gracieuse, pas fatale.
+
+    La cascade reste : c'est elle qui donne le rythme, pas le fondu.
+  */
+  .arrivee > * {
+    animation: arrivee 500ms var(--ease-out-expo) backwards;
+  }
+  /* Cascade resserrée : le dernier élément est en place à 0,83 s au lieu
+     de 1,08 s. Au-delà, une entrée cesse d'être une entrée et devient
+     une attente. */
+  .arrivee > *:nth-child(1) { animation-delay: 30ms; }
+  .arrivee > *:nth-child(2) { animation-delay: 85ms; }
+  .arrivee > *:nth-child(3) { animation-delay: 140ms; }
+  .arrivee > *:nth-child(4) { animation-delay: 195ms; }
+  .arrivee > *:nth-child(5) { animation-delay: 250ms; }
+  .arrivee > *:nth-child(6) { animation-delay: 300ms; }
+  .arrivee > *:nth-child(7) { animation-delay: 330ms; }
+
+  /* Filet horizontal qui se dessine — sert de séparateur de section. */
+  .filet {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--color-champagne) 18%,
+      var(--color-champagne) 82%,
+      transparent
+    );
+    opacity: 0.5;
+  }
+
+  /* Surtitre en petites capitales espacées, présent partout dans la
+     maquette au-dessus des titres de section.
+
+     12 px sur mobile, pas 11 : en dessous de 12 px, du texte en
+     capitales très espacées devient pénible à lire sur un téléphone.
+     L'interlettrage est aussi resserré, sinon un surtitre un peu long
+     part sur trois lignes sur un écran étroit. */
+  .surtitre {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-champagne);
+  }
+
+  @media (width >= 40rem) {
+    .surtitre {
+      font-size: 0.6875rem;
+      letter-spacing: 0.34em;
+    }
+  }
+
+  /* Le nom de la marque en script, comme le logo de la maquette. */
+  .script {
+    font-family: var(--font-script);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    line-height: 1.25;
+  }
+
+  /* =================================================================
+     VOILE POSÉ SUR LES PHOTOS — dimensionné par le calcul, pas à l'œil.
+
+     Son rôle : garantir que le texte clair reste lisible SUR N'IMPORTE
+     QUELLE PHOTO. On ne contrôle pas les photographies que Hamza
+     déposera : le voile doit donc tenir même sur le pire cas, une image
+     entièrement blanche.
+
+     L'ancienne version (#33291f, 0,55 → 0,32 → 0,62) a été mesurée :
+     sur une photo claire, le texte tombait à 2,63 de contraste. Sur les
+     visuels du site, un accent est descendu à 2,91.
+
+     Deux leviers actionnés ensemble :
+       · une couleur PLUS SOMBRE (#1c1510 au lieu de #33291f) — elle
+         assombrit davantage à opacité égale, donc la photo respire plus
+         pour une même lisibilité ;
+       · un creux moins profond au milieu : 0,70 au lieu de 0,32.
+
+     Résultat mesuré, avec les jetons autorisés sur photo (`onshell` et
+     `champagnesoft`) :
+       photo blanche  4,95 — photo claire  7,22 — photo sombre  12,77
+     Soit AA partout, quel que soit le visuel.
+
+     ⚠️  COROLLAIRE : sur une photo, n'utiliser QUE `text-onshell` et
+         `text-champagnesoft`. `onshellmuted` et `champagnepale` sont trop
+         clairs — mesurés à 4,17 et 4,3 sur photo blanche, sous le seuil.
+         Ils restent parfaits sur les aplats moka du pied de page.
+     ================================================================= */
+  .voile {
+    background: linear-gradient(
+      180deg,
+      rgb(28 21 16 / 0.74) 0%,
+      rgb(28 21 16 / 0.70) 42%,
+      rgb(28 21 16 / 0.82) 100%
+    );
+  }
+
+  .voile-bas {
+    background: linear-gradient(180deg, transparent 25%, rgb(28 21 16 / 0.85) 100%);
+  }
+
+  /* Carte standard : blanche, filet clair, ombre chaude. */
+  .carte {
+    background-color: var(--color-card);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-lg);
+  }
+}
+
+/* =====================================================================
+   RÉVÉLATION AU DÉFILEMENT — en CSS pur, pilotée par le scroll.
+
+   ⚠️  RÈGLE ABSOLUE DE CE FICHIER, née d'un vrai incident :
+       AUCUN CONTENU NE DOIT JAMAIS ATTENDRE JAVASCRIPT POUR ÊTRE VISIBLE.
+
+   La première version utilisait Framer Motion (`whileInView`). Framer
+   écrit alors `style="opacity:0"` dans le HTML rendu par le serveur, et
+   n'enlève ce voile qu'une fois la librairie démarrée. Mesuré sur ce
+   site : 59 éléments invisibles au premier affichage, **en-tête compris**.
+   Sur une machine lente ou une connexion moyenne, le visiteur cliquait un
+   lien, arrivait sur une page blanche sans navigation, et concluait que
+   le site était cassé. Il avait raison.
+
+   Le remplacement tient en une propriété : `animation-timeline: view()`.
+   L'animation est jouée par le NAVIGATEUR, sur le fil de composition, en
+   fonction de la position de l'élément dans le défilement. Aucun
+   JavaScript, aucun IntersectionObserver, aucun ré-rendu React.
+
+   La sécurité vient de l'imbrication des gardes : `opacity: 0` n'existe
+   QUE dans un bloc `@supports` qui garantit que l'animation se jouera.
+   Si le navigateur ne sait pas faire — ou si la personne demande moins de
+   mouvement — aucune règle ne masque quoi que ce soit, et le contenu
+   s'affiche simplement. Il n'y a pas de cas où le texte reste caché.
+   ===================================================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveler,
+    .reveler-groupe > * {
+      animation: reveler linear both;
+      animation-timeline: view();
+      /* L'élément se dévoile entre le moment où il entre par le bas et
+         celui où il a parcouru 32 % de l'écran. Assez tôt pour qu'on ne
+         le voie pas apparaître sous ses yeux. */
+      animation-range: entry 8% cover 32%;
+    }
+
+    /* Cascade : chaque enfant démarre un peu plus tard sur la timeline.
+       Le décalage est lié au DÉFILEMENT, pas à une minuterie — donc il
+       reste juste quelle que soit la vitesse de lecture. */
+    .reveler-groupe > *:nth-child(2) { animation-range: entry 12% cover 36%; }
+    .reveler-groupe > *:nth-child(3) { animation-range: entry 16% cover 40%; }
+    .reveler-groupe > *:nth-child(4) { animation-range: entry 20% cover 44%; }
+    .reveler-groupe > *:nth-child(5) { animation-range: entry 22% cover 46%; }
+    .reveler-groupe > *:nth-child(n+6) { animation-range: entry 24% cover 48%; }
+
+    .reveler-zoom { animation-name: reveler-zoom; }
+    .reveler-gauche { animation-name: reveler-gauche; }
+    .reveler-droite { animation-name: reveler-droite; }
+
+    /* Le visuel se dévoile derrière un rideau qui monte. */
+    .reveler-rideau {
+      animation: reveler-rideau linear both;
+      animation-timeline: view();
+      animation-range: entry 4% cover 40%;
+    }
+  }
+}
+
+@keyframes reveler {
+  from { opacity: 0; transform: translate3d(0, 24px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes reveler-zoom {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes reveler-gauche {
+  from { opacity: 0; transform: translate3d(-30px, 0, 0); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes reveler-droite {
+  from { opacity: 0; transform: translate3d(30px, 0, 0); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes reveler-rideau {
+  from { clip-path: inset(100% 0 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+
+/* Le filet de séparation se dessine du centre vers les bords.
+   Même garde que le reste : `scaleX(0)` n'existe que dans le bloc
+   `@supports`, donc sans prise en charge le filet est simplement là. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .filet-anime {
+      animation: filet-tracer linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 34%;
+      transform-origin: center;
+    }
+  }
+}
+
+@keyframes filet-tracer {
+  from { transform: scaleX(0); opacity: 0; }
+  to   { transform: scaleX(1); opacity: 0.5; }
+}
+
+/* --- Parallaxe de fond ------------------------------------------------
+   Remplace cinq abonnements JavaScript au défilement sur la seule page
+   d'accueil. Le `scale(1.12)` est obligatoire : sans lui, le décalage
+   de ±6 % découvrirait du vide en haut et en bas du cadre. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .parallaxe-fond {
+      animation: parallaxe linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+      will-change: transform;
+    }
+  }
+}
+
+@keyframes parallaxe {
+  from { transform: translate3d(0, -6%, 0) scale(1.12); }
+  to   { transform: translate3d(0, 6%, 0) scale(1.12); }
+}
+
+/* --- Texte mot à mot --------------------------------------------------
+   Chaque mot monte depuis sous sa ligne, légèrement décalé du précédent.
+   Le décalage suit le défilement, pas une horloge. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .mots-animes .mot {
+      animation: mot-monter linear both;
+      animation-timeline: view();
+      animation-range: entry 6% cover 26%;
+    }
+    .mots-animes span:nth-child(2) .mot { animation-range: entry 9% cover 29%; }
+    .mots-animes span:nth-child(3) .mot { animation-range: entry 12% cover 32%; }
+    .mots-animes span:nth-child(4) .mot { animation-range: entry 15% cover 35%; }
+    .mots-animes span:nth-child(n+5) .mot { animation-range: entry 18% cover 38%; }
+  }
+}
+
+@keyframes mot-monter {
+  from { transform: translate3d(0, 110%, 0); }
+  to   { transform: none; }
+}
+
+/* --- Progression de lecture -------------------------------------------
+   `scroll()` suit le défilement du document entier. Aucun JavaScript.
+   Sans prise en charge, la barre reste à zéro : `scaleX(0)` n'est posé
+   que dans le bloc `@supports`, donc elle est simplement invisible. */
+@supports (animation-timeline: scroll()) {
+  .progression-lecture {
+    animation: progression linear both;
+    animation-timeline: scroll();
+  }
+}
+
+@keyframes progression {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* =====================================================================
+   Utilitaires de mouvement partagés
+   ===================================================================== */
+
+@layer utilities {
+  /* Prépare un élément à être animé sur le GPU. À poser uniquement sur
+     ce qui bouge vraiment : `will-change` sur tout la page coûte de la
+     mémoire vidéo et ralentit au lieu d'accélérer. */
+  .gpu {
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+  }
+
+  /* Zoom lent du visuel au survol de sa carte. Le conteneur doit avoir
+     `overflow-hidden`. */
+  .zoom-carte img,
+  .zoom-carte .visuel {
+    transition: transform 620ms var(--ease-out-expo);
+  }
+  .zoom-carte:hover img,
+  .zoom-carte:hover .visuel {
+    transform: scale(1.06);
+  }
+
+  /* Soulignement qui se déroule depuis la gauche. */
+  .souligne {
+    background-image: linear-gradient(var(--color-champagne), var(--color-champagne));
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 0% 1px;
+    transition: background-size 260ms var(--ease-out-expo);
+  }
+  .souligne:hover,
+  .souligne:focus-visible {
+    background-size: 100% 1px;
+  }
+
+  /* Masque de dégradé pour les bandeaux défilants. */
+  .fondu-bords {
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+
+  /* ===================================================================
+     ÉTATS INTERACTIFS — même règle que `.arrivee`, appliquée à ce qui
+     apparaît APRÈS un clic.
+
+     Ces surfaces étaient pilotées par Framer Motion. Framer avance ses
+     animations depuis `requestAnimationFrame` : quand rAF ne tourne pas
+     — onglet passé en arrière-plan, appareil en économie d'énergie,
+     erreur levée dans un autre sous-arbre animé — l'élément reste FIGÉ
+     sur son état initial. Et son état initial était `opacity: 0`.
+
+     Concrètement : on ouvrait le menu et on ne voyait rien. On passait à
+     l'étape suivante de la réservation et l'étape était vide. Le message
+     d'erreur d'un champ ne s'affichait jamais.
+
+     Une animation CSS n'a pas ce défaut : elle est portée par la
+     chronologie du document, pas par une boucle JavaScript. Elle se
+     résout même dans un moteur qui ne compose pas.
+
+     Donc, ici comme dans `.arrivee` : ON N'ANIME QUE LA POSITION.
+     =================================================================== */
+
+  /* --- Volet plein écran (menu mobile) ------------------------------ */
+  /*
+    ⚠️  LE PANNEAU N'A PAS D'ANIMATION D'OUVERTURE. NE PAS EN REMETTRE.
+
+        Il en avait une : un rideau `clip-path: inset(0 0 100%) -> 0`.
+        Mesuré dans un moteur qui ne fait pas avancer les animations, le
+        panneau restait sur son image de départ — c'est-à-dire découpé à
+        zéro. Menu ouvert, écran vide : exactement le défaut Framer qu'on
+        venait de corriger, réécrit en CSS.
+
+        `clip-path`, `opacity`, `visibility`, `scale(0)`, une translation
+        hors écran : tout ce qui MASQUE dans une image de départ est
+        interdit ici, quel que soit le langage. La règle ne portait jamais
+        sur Framer, elle porte sur les propriétés masquantes.
+
+        Le mouvement vient de la cascade des liens ci-dessous, qui ne
+        décale que la position. Le fond, lui, apparaît d'un coup — et
+        personne ne l'a jamais remarqué.
+
+        La FERMETURE, elle, peut masquer : elle finit sur un état caché,
+        suivi d'un démontage. Si elle ne se joue pas, le panneau disparaît
+        simplement sans transition.
+  */
+  .volet[data-sortie='oui'] {
+    animation: volet-fermer 240ms var(--ease-in-out-quint) forwards;
+  }
+  /* Les liens montent en cascade — sans fondu, voir la règle ci-dessus. */
+  .volet-liens > * {
+    animation: arrivee-haute 460ms var(--ease-out-expo) backwards;
+  }
+  .volet-liens > *:nth-child(1) { animation-delay: 40ms; }
+  .volet-liens > *:nth-child(2) { animation-delay: 85ms; }
+  .volet-liens > *:nth-child(3) { animation-delay: 130ms; }
+  .volet-liens > *:nth-child(4) { animation-delay: 175ms; }
+  .volet-liens > *:nth-child(5) { animation-delay: 215ms; }
+  .volet-liens > *:nth-child(6) { animation-delay: 250ms; }
+  .volet-pied {
+    animation: arrivee-haute 460ms var(--ease-out-expo) 290ms backwards;
+  }
+
+  /* --- Tiroir (accordéon, panneaux dépliants) ----------------------- */
+  /*
+    La hauteur s'anime par `grid-template-rows: 0fr -> 1fr`. C'est la
+    seule technique CSS qui interpole vers une hauteur AUTO sans la
+    mesurer en JavaScript.
+
+    Là où elle n'est pas gérée, `1fr` s'applique tout de suite : le
+    panneau s'ouvre d'un coup. Le contenu reste lisible — c'est la
+    dégradation qu'on veut.
+  */
+  .tiroir {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 320ms var(--ease-out-expo);
+  }
+  .tiroir[data-ouvert='non'] {
+    grid-template-rows: 0fr;
+  }
+  .tiroir > * {
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  /* --- Apparition d'un élément monté au clic ------------------------ */
+  /* Étape de tunnel, carte de résultat, panneau de compte. */
+  .surgir {
+    animation: arrivee 380ms var(--ease-out-expo);
+  }
+  .surgir-cascade > * {
+    animation: arrivee 420ms var(--ease-out-expo) backwards;
+  }
+  .surgir-cascade > *:nth-child(1) { animation-delay: 0ms; }
+  .surgir-cascade > *:nth-child(2) { animation-delay: 45ms; }
+  .surgir-cascade > *:nth-child(3) { animation-delay: 90ms; }
+  .surgir-cascade > *:nth-child(4) { animation-delay: 135ms; }
+  .surgir-cascade > *:nth-child(5) { animation-delay: 180ms; }
+  .surgir-cascade > *:nth-child(6) { animation-delay: 215ms; }
+  .surgir-cascade > *:nth-child(n + 7) { animation-delay: 250ms; }
+
+  /* --- Message d'erreur sous un champ ------------------------------- */
+  /*
+    Un message d'erreur est la dernière chose du site qui a le droit de
+    ne pas s'afficher : sans lui, on ne sait pas pourquoi le formulaire
+    refuse d'avancer. Il n'a donc AUCUN état masqué — il glisse de 4 px.
+  */
+  .erreur-champ {
+    animation: erreur-entrer 200ms var(--ease-out-expo);
+  }
+
+  /* --- Élément qui arrive par le côté (carrousel d'avis) ------------ */
+  /*
+    `--glisse-de` porte le décalage de départ, signé selon le sens de
+    lecture : positif quand on avance, négatif quand on recule. Le
+    mouvement dit donc d'où vient l'avis.
+
+    Aucun fondu : l'état de repos est la position finale. Un avis non
+    animé est simplement à sa place.
+  */
+  .glisser {
+    animation: glisser 360ms var(--ease-out-expo);
+  }
+
+  /* --- Coche qui apparaît (étape franchie, confirmation) ------------ */
+  /*
+    Échelle uniquement, jamais d'opacité : l'état de repos est `scale(1)`,
+    donc une coche non animée reste parfaitement visible. Elle marque un
+    état accompli — la manquer, c'est croire l'étape non validée.
+  */
+  .surgir-coche {
+    display: inline-flex;
+    animation: coche-surgir 320ms var(--ease-out-back);
+  }
+
+  /* Trait de la coche qui se dessine. Repos = trait complet. */
+  .trace-coche {
+    animation: coche-tracer 520ms var(--ease-out-expo);
+  }
+
+  /* --- Pastille coulissante d'un choix segmenté --------------------- */
+  /*
+    Une seule pastille pour tout le groupe. Sa largeur vaut la largeur
+    d'un segment, son décalage vaut l'index actif — les deux se calculent
+    à partir de `--pilule-n` (nombre d'options) et `--pilule-i` (index
+    actif), posés en style inline par le composant.
+
+    `translateX` en pourcentage se rapporte à la largeur de l'élément
+    LUI-MÊME, c'est-à-dire à un segment : `--pilule-i * (100% + gouttière)`
+    tombe donc exactement sur le bon segment, quel que soit le nombre
+    d'options.
+
+    Remplace un `layoutId` Framer qui mesurait deux rectangles à chaque
+    image. Ici, sans transition, la pastille est simplement déjà en place.
+  */
+  .pilule {
+    --pilule-pad: 0.375rem;
+    --pilule-gap: 0.375rem;
+
+    position: absolute;
+    top: var(--pilule-pad);
+    bottom: var(--pilule-pad);
+    left: var(--pilule-pad);
+    width: calc(
+      (100% - 2 * var(--pilule-pad) - (var(--pilule-n) - 1) * var(--pilule-gap)) / var(--pilule-n)
+    );
+    transform: translateX(calc(var(--pilule-i) * (100% + var(--pilule-gap))));
+    border-radius: 9999px;
+    transition: transform 320ms var(--ease-out-expo);
+  }
+
+  /* --- Voile du menu lateral (back-office, mobile) ------------------ */
+  /*
+    Element purement decoratif : c'est un bouton plein ecran qui ferme le
+    menu. Il ne porte aucun contenu, et sa zone de clic reste active meme
+    si le fondu ne se joue pas — au pire il est transparent, jamais
+    bloquant.
+  */
+  .voile-admin {
+    animation: voile-entrer 200ms ease-out;
+  }
+
+  /* --- Superposition modale (lightbox) ------------------------------ */
+  /*
+    Le fondu porte sur un PSEUDO-ÉLÉMENT qui ne contient que le fond
+    assombri, jamais sur le conteneur.
+
+    Posé sur le conteneur, il faisait exactement ce qu'on cherche à
+    éliminer : l'image agrandie est un enfant du voile, donc un voile
+    resté à `opacity: 0` emportait la visionneuse entière avec lui. On
+    cliquait sur une photo et on tombait sur du vide.
+
+    Ici, si le fondu ne se joue pas, on obtient au pire une visionneuse
+    sans assombrissement : la page reste visible derrière l'image. C'est
+    laid une fraction de seconde, ce n'est jamais cassé.
+  */
+  .voile-modal::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: inherit;
+    animation: voile-entrer 240ms ease-out;
+  }
+  .modal-contenu {
+    animation: modal-entrer 320ms var(--ease-out-expo);
+  }
+}
+
+/* =====================================================================
+   Keyframes
+   ===================================================================== */
+
+/* Aucune `opacity` ici, volontairement — voir la règle `.arrivee`. */
+@keyframes arrivee {
+  from { transform: translate3d(0, 14px, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+
+@keyframes marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+
+@keyframes marquee-reverse {
+  from { transform: translate3d(-50%, 0, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, -14px, 0); }
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50%      { transform: scale(1.05); opacity: 1; }
+}
+
+@keyframes shimmer {
+  0%   { transform: translate3d(-120%, 0, 0); }
+  100% { transform: translate3d(220%, 0, 0); }
+}
+
+@keyframes pulse-ring {
+  0%   { transform: scale(0.9); opacity: 0.7; }
+  70%  { transform: scale(1.5); opacity: 0; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* --- États interactifs. Aucune `opacity` sur du contenu. ------------- */
+
+@keyframes volet-fermer {
+  from { clip-path: inset(0 0 0 0); }
+  to   { clip-path: inset(0 0 100% 0); }
+}
+
+@keyframes arrivee-haute {
+  from { transform: translate3d(0, 26px, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+
+@keyframes erreur-entrer {
+  from { transform: translate3d(0, -4px, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+
+/* Le voile est décoratif : le fondu y est sans risque. */
+@keyframes voile-entrer {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes glisser {
+  from { transform: translate3d(var(--glisse-de, 40px), 0, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+
+@keyframes coche-surgir {
+  from { transform: scale(0.4); }
+  to   { transform: scale(1); }
+}
+
+/*
+  30 couvre la longueur du tracé (≈ 26,2 unités du viewBox). Sans
+  `fill-mode`, l'élément revient à son état de repos — `stroke-dashoffset`
+  non déclaré, donc 0, donc trait entier — dès la fin de l'animation, et
+  l'affiche tel quel si elle ne démarre jamais.
+*/
+@keyframes coche-tracer {
+  from { stroke-dasharray: 30; stroke-dashoffset: 30; }
+  to   { stroke-dasharray: 30; stroke-dashoffset: 0; }
+}
+
+@keyframes modal-entrer {
+  from { transform: translate3d(0, 18px, 0) scale(0.97); }
+  to   { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+/* =====================================================================
+   Mouvement réduit.
+
+   Quand le système le demande, on ne coupe pas les animations à zéro —
+   on les réduit à un fondu très court. Passer brutalement à `none`
+   casse les composants qui attendent la fin d'une transition (accordéon,
+   panneaux) et les laisse dans un état intermédiaire.
+   ===================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Plus besoin de rattraper une opacité : la règle de base ne masque
+     plus rien. On coupe simplement l'animation. */
+  .arrivee > *,
+  .glisser,
+  .surgir-coche,
+  .trace-coche,
+  .pilule,
+  .volet,
+  .volet-liens > *,
+  .volet-pied,
+  .surgir,
+  .surgir-cascade > *,
+  .erreur-champ,
+  .modal-contenu,
+  .voile-admin,
+  .voile-modal::before {
+    animation: none;
+  }
+
+  /* Le volet de fermeture gardait `forwards` : sans animation, il n'y a
+     plus rien pour le refermer visuellement — il disparaît au démontage,
+     ce qui est le comportement attendu en mouvement réduit. */
+  .volet[data-sortie='oui'] {
+    animation: none;
+  }
+
+  /* La pastille se pose sans glisser. */
+  .pilule {
+    transition: none;
+  }
+}
+
+/* =====================================================================
+   Impression — la page « Réservation » et le récapitulatif doivent
+   pouvoir être imprimés proprement par l'institut.
+   ===================================================================== */
+
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+  header, footer, .no-print {
+    display: none !important;
+  }
+}
