@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { readFileSync } from 'node:fs';
+
 import { cert, getApps, initializeApp, type App } from 'firebase-admin/app';
 import { getAuth, type Auth } from 'firebase-admin/auth';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
@@ -36,8 +38,34 @@ function nettoyerCle(brut: string): string {
   return v.trim();
 }
 
+/**
+ * Lit la cle depuis un FICHIER, chemin donne par
+ * `GOOGLE_APPLICATION_CREDENTIALS` (variable standard Google).
+ *
+ * C'est la forme a privilegier EN LOCAL. `.env.local` ne contient alors
+ * qu'un chemin : le secret n'est plus dans un fichier de configuration
+ * qu'un editeur, un journal d'outil ou une capture d'ecran peut exposer.
+ *
+ * Chez un hebergeur sans systeme de fichiers persistant (Vercel), il n'y a
+ * pas de fichier a designer : on y utilise `FIREBASE_SERVICE_ACCOUNT_KEY`,
+ * stockee comme variable sensible.
+ */
+function depuisFichier(): string | undefined {
+  const chemin = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+  if (!chemin) return undefined;
+  try {
+    return readFileSync(chemin, 'utf8');
+  } catch {
+    throw new Error(
+      'GOOGLE_APPLICATION_CREDENTIALS designe « ' +
+        chemin +
+        ' », mais ce fichier est introuvable ou illisible.',
+    );
+  }
+}
+
 function credentials() {
-  const brut = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+  const brut = process.env.FIREBASE_SERVICE_ACCOUNT_KEY || depuisFichier();
   const raw = brut ? nettoyerCle(brut) : undefined;
 
   if (raw) {
@@ -46,8 +74,9 @@ function credentials() {
       parsed = JSON.parse(raw);
     } catch {
       throw new Error(
-        'FIREBASE_SERVICE_ACCOUNT_KEY est présente mais illisible. ' +
-          'Colle le contenu du fichier .json sur une seule ligne.',
+        'La cle de compte de service est illisible. ' +
+          'Soit FIREBASE_SERVICE_ACCOUNT_KEY contient le JSON sur une seule ligne, ' +
+          'soit GOOGLE_APPLICATION_CREDENTIALS designe un fichier .json valide.',
       );
     }
     if (!parsed.private_key || !parsed.client_email || !parsed.project_id) {
@@ -111,6 +140,7 @@ function projetEmule(): string {
 export const adminReady = Boolean(
   modeEmulateur ||
     process.env.FIREBASE_SERVICE_ACCOUNT_KEY ||
+    process.env.GOOGLE_APPLICATION_CREDENTIALS ||
     (process.env.FIREBASE_ADMIN_PROJECT_ID &&
       process.env.FIREBASE_ADMIN_CLIENT_EMAIL &&
       process.env.FIREBASE_ADMIN_PRIVATE_KEY),

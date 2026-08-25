@@ -47,10 +47,36 @@ export function chargerEnv(base = import.meta.url) {
  * avec un message qui dit quoi faire.
  */
 export function compteDeService() {
-  const brut = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+  // Deux formes acceptées, dans cet ordre :
+  //
+  //   1. GOOGLE_APPLICATION_CREDENTIALS — un CHEMIN vers le fichier .json.
+  //      Forme à privilégier en local : `.env.local` ne contient alors
+  //      qu'un chemin, et le secret reste dans un seul fichier ignoré par
+  //      git. Un fichier de configuration finit toujours par être ouvert
+  //      devant quelqu'un, collé dans un ticket ou affiché par un outil ;
+  //      un chemin ne coûte rien s'il fuite.
+  //
+  //   2. FIREBASE_SERVICE_ACCOUNT_KEY — le JSON complet sur une ligne.
+  //      Nécessaire chez un hébergeur sans système de fichiers persistant.
+  let brut = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+
+  if (!brut && process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    try {
+      brut = readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, 'utf8');
+    } catch {
+      console.error(
+        'GOOGLE_APPLICATION_CREDENTIALS désigne « ' +
+          process.env.GOOGLE_APPLICATION_CREDENTIALS +
+          ' », introuvable ou illisible.',
+      );
+      process.exit(1);
+    }
+  }
 
   if (!brut) {
-    console.error('FIREBASE_SERVICE_ACCOUNT_KEY est absente de .env.local.');
+    console.error('Aucune clé de compte de service trouvée dans .env.local.');
+    console.error('Attendu : GOOGLE_APPLICATION_CREDENTIALS (chemin du .json)');
+    console.error('      ou : FIREBASE_SERVICE_ACCOUNT_KEY (JSON sur une ligne)');
     console.error(
       'Console Firebase > Paramètres du projet > Comptes de service > Générer une clé privée.',
     );

@@ -20,6 +20,8 @@ yarn-error.log*
 .env
 .env*.local
 serviceAccountKey.json
+service-account*.json
+*-firebase-adminsdk-*.json
 
 .vercel
 *.tsbuildinfo
