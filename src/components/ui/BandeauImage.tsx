@@ -4,25 +4,21 @@ import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 // =====================================================================
-//  Bandeau pleine largeur sur photo.
+//  Bande photo pleine largeur.
 //
-//  ⚠️  RÉÉCRIT — composant SERVEUR, aucun JavaScript envoyé.
-//      Ne pas y remettre `useScroll`.
+//  ⚠️  Composant SERVEUR, aucun JavaScript envoyé. Ne pas y remettre
+//      `useScroll` : sa version d'origine ouvrait un abonnement au
+//      défilement PAR INSTANCE, et il y en a plusieurs sur l'accueil.
 //
-//  Il est utilisé quatre fois sur la seule page d'accueil, et en tête de
-//  chaque page intérieure. Sa version précédente ouvrait un abonnement au
-//  défilement et une valeur ressort PAR INSTANCE : sur l'accueil, cela
-//  faisait cinq boucles d'animation concurrentes sur le fil principal,
-//  rien que pour décaler des images de quelques pixels. C'est une des
-//  causes directes de la lenteur au défilement.
+//  ⚠️  DEUX DISPOSITIONS, ET « côté » EST LA VALEUR PAR DÉFAUT.
+//      Voir la note détaillée dans `EnTetePage.tsx` — même raisonnement,
+//      même conclusion : nos visuels sont en portrait, un portrait
+//      recadré en bandeau très large perd l'essentiel de sa hauteur, et
+//      poser du texte sur une photo rend le contraste dépendant de ce
+//      que la photo contient.
 //
-//  La parallaxe passe par `.parallaxe-fond` (CSS, `animation-timeline:
-//  scroll()`), donc par le compositeur. Sans prise en charge, l'image est
-//  fixe — on perd l'effet, jamais le contenu.
-//
-//  LE VOILE N'EST PAS OPTIONNEL : le texte est blanc et doit rester
-//  lisible même si la photo qui remplacera l'illustration est très claire.
-//  On ne parie pas sur des visuels qu'on n'a pas encore.
+//      En « côté », le texte est sur un fond uni : le contraste devient
+//      une propriété du code, plus un pari sur l'image.
 // =====================================================================
 
 export function BandeauImage({
@@ -32,6 +28,8 @@ export function BandeauImage({
   align = 'centre',
   parallaxe = true,
   voile = 'moyen',
+  disposition = 'cote',
+  imageADroite = true,
   children,
   className,
 }: {
@@ -41,6 +39,9 @@ export function BandeauImage({
   align?: 'centre' | 'gauche' | 'droite';
   parallaxe?: boolean;
   voile?: 'leger' | 'moyen' | 'fort';
+  disposition?: 'cote' | 'plein';
+  /** Côté visuel de l'image sur grand écran. Sans effet sur mobile. */
+  imageADroite?: boolean;
   children: ReactNode;
   className?: string;
 }) {
@@ -49,6 +50,13 @@ export function BandeauImage({
     moyen: 'min-h-[360px] py-16 sm:min-h-[460px] sm:py-24',
     haut: 'min-h-[440px] py-20 sm:min-h-[600px] sm:py-28',
     plein: 'min-h-[70svh] py-20 sm:min-h-[85svh] sm:py-28',
+  } as const;
+
+  const HAUTEURS_COTE = {
+    court: 'py-14 lg:min-h-[340px] lg:py-16',
+    moyen: 'py-16 lg:min-h-[520px] lg:py-20',
+    haut: 'py-20 lg:min-h-[600px] lg:py-24',
+    plein: 'py-20 lg:min-h-[70svh] lg:py-28',
   } as const;
 
   const ALIGNS = {
@@ -63,6 +71,56 @@ export function BandeauImage({
     fort: 'bg-ink/62',
   } as const;
 
+  // ------------------------------------------------------------------
+  //  Disposition « côté ».
+  // ------------------------------------------------------------------
+  if (disposition === 'cote') {
+    return (
+      <section className={cn('relative bg-shelldeep', className)}>
+        <div
+          className={cn(
+            'mx-auto grid max-w-[1400px]',
+            imageADroite ? 'lg:grid-cols-[1fr_minmax(0,38%)]' : 'lg:grid-cols-[minmax(0,38%)_1fr]',
+          )}
+        >
+          {/*
+            Le texte est PREMIER dans le DOM quel que soit le côté choisi :
+            au clavier et au lecteur d'écran, on rencontre le message avant
+            une image décorative. Seul `lg:order-*` déplace le rendu.
+          */}
+          <div
+            className={cn(
+              'flex flex-col justify-center px-5 sm:px-8',
+              imageADroite ? 'lg:pr-14' : 'lg:order-2 lg:pl-14',
+              HAUTEURS_COTE[hauteur],
+              ALIGNS[align],
+            )}
+          >
+            {children}
+          </div>
+
+          <div
+            className={cn(
+              'relative aspect-[4/5] w-full sm:aspect-[16/10] lg:aspect-auto lg:min-h-full',
+              imageADroite ? '' : 'lg:order-1',
+            )}
+          >
+            <Image
+              src={src}
+              alt={alt}
+              fill
+              sizes="(max-width: 1024px) 100vw, 38vw"
+              className="object-cover"
+            />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // ------------------------------------------------------------------
+  //  Disposition « plein ».
+  // ------------------------------------------------------------------
   return (
     <section
       className={cn('relative flex items-center overflow-hidden', HAUTEURS[hauteur], className)}
@@ -89,7 +147,12 @@ export function BandeauImage({
         <div className={cn('absolute inset-0', VOILES[voile])} />
       </div>
 
-      <div className={cn('relative z-10 mx-auto flex w-full max-w-[1400px] flex-col px-5 sm:px-8', ALIGNS[align])}>
+      <div
+        className={cn(
+          'relative z-10 mx-auto flex w-full max-w-[1400px] flex-col px-5 sm:px-8',
+          ALIGNS[align],
+        )}
+      >
         {children}
       </div>
     </section>

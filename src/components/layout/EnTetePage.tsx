@@ -6,19 +6,30 @@ import { Icon } from '@/components/ui/Icon';
 import { cn } from '@/lib/utils';
 
 // =====================================================================
-//  Bandeau de titre des pages intérieures.
-//
-//  C'est ici que vit l'ARRIVÉE de la page — une seule par page, en haut.
-//  Elle est écrite en CSS (`.arrivee`, cascade par `:nth-child`) et non
-//  en JavaScript : c'est le texte le plus important de la page, il ne
-//  doit pas rester invisible en attendant qu'une librairie démarre.
-//
-//  D'où la contrainte : les enfants directs du bloc `.arrivee` sont
-//  animés dans l'ordre du DOM. Ne pas y insérer de conteneur
-//  intermédiaire, sinon toute la cascade se joue en une seule fois.
+//  En-tête de page intérieure.
 //
 //  Le fil d'Ariane est un vrai `<nav aria-label="Fil d'Ariane">` avec une
 //  liste ordonnée : les lecteurs d'écran annoncent alors la profondeur.
+//
+//  ⚠️  DEUX DISPOSITIONS, ET « côté » EST LA VALEUR PAR DÉFAUT.
+//
+//      « plein » pose le texte SUR la photo, derrière un voile sombre.
+//      C'était la seule disposition. Elle exige une photo large : nos
+//      visuels sont en portrait, et un portrait recadré dans un bandeau
+//      très large perd environ 68 % de sa hauteur. L'arche, le plafond,
+//      la composition — tout disparaissait, et le voile devait encore
+//      assombrir ce qu'il restait pour que le titre reste lisible.
+//
+//      « côté » met l'image DANS SA PROPRE COLONNE et le texte sur un
+//      fond uni à côté. Deux gains, pas un :
+//        · l'image est montrée presque entière ;
+//        · le texte n'est plus jamais sur une photo, donc le contraste
+//          ne dépend plus de ce que la photo contient. C'est la seule
+//          façon de le rendre structurellement sûr.
+//
+//      Le fond reste SOMBRE (`bg-shelldeep`) : les couleurs de texte ne
+//      changent pas d'une disposition à l'autre, et nos images claires
+//      ressortent par opposition.
 // =====================================================================
 
 export function EnTetePage({
@@ -29,6 +40,8 @@ export function EnTetePage({
   filAriane,
   action,
   hauteur = 'moyen',
+  disposition = 'cote',
+  alt = '',
 }: {
   surtitre?: string;
   titre: ReactNode;
@@ -37,7 +50,109 @@ export function EnTetePage({
   filAriane?: readonly { label: string; href?: string }[];
   action?: ReactNode;
   hauteur?: 'court' | 'moyen';
+  disposition?: 'cote' | 'plein';
+  alt?: string;
 }) {
+  const contenu = (
+    <>
+      {filAriane && filAriane.length > 0 && (
+        <nav aria-label="Fil d’Ariane">
+          <ol className="flex flex-wrap items-center gap-1.5 text-xs text-onshell">
+            <li>
+              <Link href="/" className="transition-colors duration-[140ms] hover:text-champagnesoft">
+                Accueil
+              </Link>
+            </li>
+            {filAriane.map((f) => (
+              <li key={f.label} className="flex items-center gap-1.5">
+                <Icon nom="chevron-droite" taille={11} className="opacity-45" />
+                {f.href ? (
+                  <Link
+                    href={f.href}
+                    className="transition-colors duration-[140ms] hover:text-champagnesoft"
+                  >
+                    {f.label}
+                  </Link>
+                ) : (
+                  <span className="text-onshell" aria-current="page">
+                    {f.label}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )}
+
+      {surtitre && <span className="surtitre mt-5 block text-champagnesoft">{surtitre}</span>}
+
+      <h1
+        className={cn(
+          'mt-4 font-display leading-[1.05] text-onshell',
+          disposition === 'plein'
+            ? 'max-w-3xl text-[2.5rem] sm:text-[3.25rem] lg:text-[4rem]'
+            : 'text-[2.25rem] sm:text-[2.75rem] lg:text-[3.25rem]',
+        )}
+      >
+        {titre}
+      </h1>
+
+      {texte && (
+        <p className="mt-5 max-w-xl text-[0.9375rem] leading-relaxed text-onshell">{texte}</p>
+      )}
+
+      {action && <div className="mt-8">{action}</div>}
+    </>
+  );
+
+  // ------------------------------------------------------------------
+  //  Disposition « côté » — l'image dans sa colonne, le texte à côté.
+  // ------------------------------------------------------------------
+  if (disposition === 'cote') {
+    return (
+      <section className="relative bg-shelldeep">
+        <div className="mx-auto grid max-w-[1400px] lg:grid-cols-[1fr_minmax(0,36%)]">
+          {/*
+            Le texte passe EN PREMIER dans le DOM : au clavier comme au
+            lecteur d'écran, on arrive sur le fil d'Ariane et le titre,
+            pas sur une image décorative. `lg:order-*` ne change que le
+            rendu visuel.
+          */}
+          <div
+            className={cn(
+              'arrivee flex flex-col justify-center px-5 sm:px-8 lg:pr-14',
+              hauteur === 'court'
+                ? 'pb-12 pt-28 lg:min-h-[440px] lg:py-16'
+                : 'pb-14 pt-32 lg:min-h-[580px] lg:py-20',
+            )}
+          >
+            {contenu}
+          </div>
+
+          {/*
+            L'image garde un rapport proche du portrait : en pleine
+            largeur sur mobile, en colonne haute sur grand écran. Le
+            recadrage résiduel ne mord que sur les bords, jamais sur le
+            sujet.
+          */}
+          <div className="relative aspect-[4/5] w-full sm:aspect-[16/10] lg:aspect-auto lg:min-h-full">
+            <Image
+              src={image}
+              alt={alt}
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 36vw"
+              className="object-cover"
+            />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // ------------------------------------------------------------------
+  //  Disposition « plein » — texte sur la photo, derrière un voile.
+  // ------------------------------------------------------------------
   return (
     <section
       className={cn(
@@ -45,7 +160,6 @@ export function EnTetePage({
         hauteur === 'court' ? 'min-h-[340px] pb-12 pt-32' : 'min-h-[460px] pb-16 pt-36',
       )}
     >
-      {/* --- Visuel --- */}
       {/*
         ⚠️  PAS DE `-z-10` ICI. Ne jamais le remettre.
 
@@ -64,50 +178,12 @@ export function EnTetePage({
         donc aucune dépendance à un contexte d'empilement d'ancêtre.
       */}
       <div className="absolute inset-0 z-0">
-        <Image src={image} alt="" fill priority sizes="100vw" className="object-cover" />
+        <Image src={image} alt={alt} fill priority sizes="100vw" className="object-cover" />
         <div className="absolute inset-0 voile" />
       </div>
 
       <div className="arrivee relative z-10 mx-auto w-full max-w-[1400px] px-5 sm:px-8">
-        {filAriane && filAriane.length > 0 && (
-          <nav aria-label="Fil d’Ariane">
-            <ol className="flex flex-wrap items-center gap-1.5 text-xs text-onshell">
-              <li>
-                <Link href="/" className="transition-colors duration-[140ms] hover:text-onshell">
-                  Accueil
-                </Link>
-              </li>
-              {filAriane.map((f) => (
-                <li key={f.label} className="flex items-center gap-1.5">
-                  <Icon nom="chevron-droite" taille={11} className="opacity-45" />
-                  {f.href ? (
-                    <Link href={f.href} className="transition-colors duration-[140ms] hover:text-onshell">
-                      {f.label}
-                    </Link>
-                  ) : (
-                    <span className="text-onshell" aria-current="page">
-                      {f.label}
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ol>
-          </nav>
-        )}
-
-        {surtitre && <span className="surtitre mt-5 block text-champagnesoft">{surtitre}</span>}
-
-        <h1 className="mt-4 max-w-3xl font-display text-[2.5rem] leading-[1.05] text-onshell sm:text-[3.25rem] lg:text-[4rem]">
-          {titre}
-        </h1>
-
-        {texte && (
-          <p className="mt-5 max-w-xl text-[0.9375rem] leading-relaxed text-onshell">
-            {texte}
-          </p>
-        )}
-
-        {action && <div className="mt-8">{action}</div>}
+        {contenu}
       </div>
     </section>
   );
