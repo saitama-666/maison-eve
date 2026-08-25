@@ -4,6 +4,7 @@ import { contact } from '@/data/site';
 import { tarifDuSoin } from '@/lib/catalogue';
 import { adminDb, adminReady, bearerToken, verifyIdToken } from '@/lib/firebase/admin';
 import { creneauValide } from '@/lib/creneaux';
+import { creneauLibreDansTransaction, heuresOccupees } from '@/lib/occupation';
 import { referenceRdv } from '@/lib/utils';
 import {
   contientDonneeBancaire,
@@ -34,6 +35,12 @@ import {
 //   3. LES DONNÉES BANCAIRES. On refuse la requête entière si elle
 //      contient un champ de carte, même par accident. C'est le troisième
 //      garde-fou après le formulaire et les règles Firestore.
+//
+//   4. LE CRÉNEAU EST-IL LIBRE. Vérifié DANS UNE TRANSACTION, juste
+//      avant d'écrire. Sans transaction, deux requêtes simultanées
+//      liraient toutes les deux « c'est libre » avant que l'une n'écrive :
+//      le contrôle passerait, et on aurait quand même deux rendez-vous à
+//      la même heure.
 //
 //  La réservation naît en « en-attente » : c'est un être humain qui
 //  confirme, depuis le back-office.
@@ -220,7 +227,31 @@ export async function POST(request: NextRequest) {
       cancelledAt: null,
     };
 
-    const ref = await adminDb().collection('reservations').add(document);
+    // Le contrôle de disponibilité et l'écriture sont dans la MÊME
+    // transaction. C'est ce qui rend impossible la double réservation :
+    // deux requêtes concurrentes ne peuvent pas conclure toutes les deux
+    // que le créneau est libre.
+    const ref = adminDb().collection('reservations').doc();
+
+    const libre = await adminDb().runTransaction(async (tx) => {
+      if (!(await creneauLibreDansTransaction(tx, debut, fin))) return false;
+      tx.set(ref, document);
+      return true;
+    });
+
+    if (!libre) {
+      // 409 et non 400 : la requête était valide, c'est l'état du monde
+      // qui a changé entre l'affichage du calendrier et l'envoi.
+      return Response.json(
+        {
+          error:
+            'Ce créneau vient d’être réservé. Choisissez un autre horaire — ' +
+            'le calendrier est à jour.',
+          code: 'creneau-pris',
+        },
+        { status: 409 },
+      );
+    }
 
     // TODO — voir PROGRESS.md §11 : aucun e-mail n'est envoyé, ni à la
     // cliente ni à l'institut. Tant que ce n'est pas branché, une
@@ -235,5 +266,51 @@ export async function POST(request: NextRequest) {
       { error: 'La réservation n’a pas pu être enregistrée. Réessayez.' },
       { status: 500 },
     );
+  }
+}
+
+// =====================================================================
+//  GET /api/reservations?date=2026-08-27&duree=60
+//
+//  Heures qu'on ne peut pas proposer ce jour-là. Alimente le calendrier
+//  pour qu'il grise les créneaux pris AVANT que la cliente remplisse tout
+//  le formulaire.
+//
+//  Publique et sans authentification : le calendrier s'affiche avant
+//  toute connexion. Elle ne renvoie donc QUE des heures — jamais un nom,
+//  un téléphone, un montant ni un identifiant. Savoir que « 15 h est
+//  pris » n'apprend rien sur qui l'a pris.
+// =====================================================================
+
+export async function GET(request: NextRequest) {
+  if (!adminReady) {
+    // Sans Admin SDK on ne sait rien : on ne bloque rien plutôt que de
+    // faire croire à tort que la journée est complète.
+    return Response.json({ occupees: [] });
+  }
+
+  const params = request.nextUrl.searchParams;
+  const date = nettoyer(params.get('date'), 10);
+  const duree = Number(params.get('duree'));
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return Response.json({ error: 'Date attendue au format AAAA-MM-JJ.' }, { status: 400 });
+  }
+  if (!Number.isFinite(duree) || duree < 15 || duree > 600) {
+    return Response.json({ error: 'Durée invalide.' }, { status: 400 });
+  }
+
+  const [a, m, j] = date.split('-').map(Number);
+  const jour = new Date(a, m - 1, j);
+  if (Number.isNaN(jour.getTime())) {
+    return Response.json({ error: 'Date invalide.' }, { status: 400 });
+  }
+
+  try {
+    return Response.json({ occupees: await heuresOccupees(jour, duree) });
+  } catch {
+    // En cas de panne on n'invente pas d'indisponibilité : la
+    // transaction refusera de toute façon un créneau réellement pris.
+    return Response.json({ occupees: [] });
   }
 }

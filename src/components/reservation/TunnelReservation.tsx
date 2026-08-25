@@ -100,6 +100,21 @@ export function TunnelReservation() {
   const toast = useToast();
 
   const [etape, setEtape] = useState(0);
+
+
+  // Créneaux déjà pris pour le jour affiché, par date.
+
+  //
+
+  // Sans ça, la cliente choisissait une heure déjà réservée, remplissait
+
+  // tout le formulaire, et se faisait refuser à la dernière étape. Le
+
+  // serveur refuse toujours — c'est lui qui fait autorité — mais autant
+
+  // ne pas proposer ce qui n'est plus disponible.
+
+  const [occupes, setOccupes] = useState<Record<string, readonly string[]>>({});
   const [atteinte, setAtteinte] = useState(0);
   const [d, setD] = useState<Donnees>(donneesVides);
   const [erreurs, setErreurs] = useState<Record<string, string>>({});
@@ -306,6 +321,24 @@ export function TunnelReservation() {
 
       const resultat = await reponse.json();
 
+      // 409 : quelqu'un a réservé ce créneau pendant que la cliente
+      // remplissait le formulaire. Ce n'est pas une erreur de sa part —
+      // on la ramène au calendrier, rafraîchi, plutôt que de lui montrer
+      // un message d'échec devant un formulaire qu'elle croit fautif.
+      if (reponse.status === 409) {
+        setOccupes((p) => ({
+          ...p,
+          [d.date]: [...(p[d.date] ?? []), d.creneau],
+        }));
+        maj('creneau', '');
+        setEtape(2);
+        setEnvoi(false);
+        toast.erreur(
+          resultat?.error || 'Ce créneau vient d’être réservé. Choisissez un autre horaire.',
+        );
+        return;
+      }
+
       if (!reponse.ok) {
         throw new Error(resultat?.error || 'La réservation n’a pas pu être enregistrée.');
       }
@@ -317,6 +350,27 @@ export function TunnelReservation() {
       setEnvoi(false);
     }
   }
+
+  // Recharge la liste des heures prises quand le jour ou le soin change.
+  useEffect(() => {
+    if (etape !== 2 || !d.date) return;
+
+    const duree = service?.duree ?? 60;
+    const arret = new AbortController();
+
+    fetch(`/api/reservations?date=${encodeURIComponent(d.date)}&duree=${duree}`, {
+      signal: arret.signal,
+    })
+      .then((r) => (r.ok ? r.json() : { occupees: [] }))
+      .then((j: { occupees?: string[] }) => {
+        setOccupes((p) => ({ ...p, [d.date]: j.occupees ?? [] }));
+      })
+      // Panne réseau : on ne bloque rien côté affichage. Le serveur
+      // refusera de toute façon un créneau réellement pris.
+      .catch(() => {});
+
+    return () => arret.abort();
+  }, [etape, d.date, service?.duree]);
 
   return (
     <>
@@ -393,6 +447,7 @@ export function TunnelReservation() {
                       dureeMinutes={service?.duree ?? 60}
                       date={d.date}
                       creneau={d.creneau}
+                      occupes={occupes}
                       onDate={(v) => maj('date', v)}
                       onCreneau={(v) => maj('creneau', v)}
                     />
