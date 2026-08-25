@@ -1,6 +1,7 @@
 {
   "indexes": [
     {
+      "__commentaire": "Espace client — « Mes rendez-vous ». Verifie : la requete passe.",
       "collectionGroup": "reservations",
       "queryScope": "COLLECTION",
       "fields": [
@@ -9,6 +10,16 @@
       ]
     },
     {
+      "__commentaire": "Back-office — filtre par statut. L'index existant etait en startAt ASCENDING alors que /api/admin/reservations trie en DESCENDING : le filtre par statut echouait en production. Un index composite est directionnel, il ne se parcourt pas a l'envers.",
+      "collectionGroup": "reservations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "startAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "__commentaire": "Conserve : le back-office peut aussi trier du plus ancien au plus recent.",
       "collectionGroup": "reservations",
       "queryScope": "COLLECTION",
       "fields": [
@@ -17,14 +28,16 @@
       ]
     },
     {
+      "__commentaire": "Catalogue. Les champs declares etaient 'active' et 'order' — deux champs qui N'EXISTENT PAS : le code utilise 'actif' et 'ordre'. L'index n'indexait donc rien. Corrige.",
       "collectionGroup": "services",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "active", "order": "ASCENDING" },
-        { "fieldPath": "order", "order": "ASCENDING" }
+        { "fieldPath": "actif", "order": "ASCENDING" },
+        { "fieldPath": "ordre", "order": "ASCENDING" }
       ]
     },
     {
+      "__commentaire": "Avis clients. 'published' correspond bien au champ pose par les regles.",
       "collectionGroup": "reviews",
       "queryScope": "COLLECTION",
       "fields": [
@@ -34,11 +47,12 @@
       ]
     },
     {
+      "__commentaire": "Journal. Les champs declares etaient 'published' et 'publishedAt' — le code utilise 'publie' et 'publieLe'. Corrige.",
       "collectionGroup": "journal",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "published", "order": "ASCENDING" },
-        { "fieldPath": "publishedAt", "order": "DESCENDING" }
+        { "fieldPath": "publie", "order": "ASCENDING" },
+        { "fieldPath": "publieLe", "order": "DESCENDING" }
       ]
     }
   ],

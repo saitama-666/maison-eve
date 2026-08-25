@@ -173,6 +173,7 @@ export function GestionReservations() {
                   type="button"
                   onClick={() => setDeplie(ouvert ? null : r.id)}
                   aria-expanded={ouvert}
+                  aria-controls={`rdv-${r.id}`}
                   className="flex w-full items-center gap-4 p-4 text-left transition-colors duration-[140ms] hover:bg-canvas2"
                 >
                   <span
@@ -218,7 +219,14 @@ export function GestionReservations() {
                 {/* Tiroir : voir la note identique dans BoiteMessages. Ici
                     le detail contient l'adresse et le telephone du client —
                     la raison meme d'ouvrir la ligne. */}
-                <div inert={!ouvert} data-ouvert={ouvert ? 'oui' : 'non'} className="tiroir">
+                <div
+                  id={`rdv-${r.id}`}
+                  role="region"
+                  aria-label={`Detail du rendez-vous de ${r.client.prenom} ${r.client.nom}`}
+                  inert={!ouvert}
+                  data-ouvert={ouvert ? 'oui' : 'non'}
+                  className="tiroir"
+                >
                   <div>
                       <div className="border-t border-line p-5">
                         <div className="grid gap-6 lg:grid-cols-2">

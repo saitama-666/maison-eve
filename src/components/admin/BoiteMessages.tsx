@@ -162,6 +162,7 @@ export function BoiteMessages() {
                   type="button"
                   onClick={() => ouvrir(m)}
                   aria-expanded={estOuvert}
+                  aria-controls={`message-${m.id}`}
                   className="flex w-full items-center gap-4 p-4 text-left transition-colors duration-[140ms] hover:bg-canvas2"
                 >
                   {/* Pastille de non-lu — plus lisible qu'un texte en gras,
@@ -216,7 +217,14 @@ export function BoiteMessages() {
                     de `{ height: 0, opacity: 0 }` sous Framer : le message
                     ne s'ouvrait jamais si la boucle d'animation ne tournait
                     pas. */}
-                <div inert={!estOuvert} data-ouvert={estOuvert ? 'oui' : 'non'} className="tiroir">
+                <div
+                  id={`message-${m.id}`}
+                  role="region"
+                  aria-label={`Message de ${m.nom}`}
+                  inert={!estOuvert}
+                  data-ouvert={estOuvert ? 'oui' : 'non'}
+                  className="tiroir"
+                >
                   <div>
                       <div className="border-t border-line p-5">
                         <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
