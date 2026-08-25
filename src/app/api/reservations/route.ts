@@ -4,6 +4,7 @@ import { contact } from '@/data/site';
 import { tarifDuSoin } from '@/lib/catalogue';
 import { adminDb, adminReady, bearerToken, verifyIdToken } from '@/lib/firebase/admin';
 import { creneauValide } from '@/lib/creneaux';
+import { instantLocal } from '@/lib/fuseau';
 import { creneauLibreDansTransaction, heuresOccupees } from '@/lib/occupation';
 import { referenceRdv } from '@/lib/utils';
 import {
@@ -301,7 +302,9 @@ export async function GET(request: NextRequest) {
   }
 
   const [a, m, j] = date.split('-').map(Number);
-  const jour = new Date(a, m - 1, j);
+  // Minuit à l'heure de l'institut : sinon un serveur en UTC répond pour
+  // le mauvais jour pendant la première heure de la journée marocaine.
+  const jour = instantLocal(a, m, j);
   if (Number.isNaN(jour.getTime())) {
     return Response.json({ error: 'Date invalide.' }, { status: 400 });
   }

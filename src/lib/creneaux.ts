@@ -1,4 +1,9 @@
-import { cleJour } from '@/lib/utils';
+import {
+  cleJourLocale,
+  instantLocal,
+  minutesDansLaJournee,
+  partiesLocales,
+} from '@/lib/fuseau';
 
 // =====================================================================
 //  Créneaux de rendez-vous.
@@ -57,7 +62,7 @@ function versHeure(minutes: number): string {
 
 /** L'institut est-il ouvert ce jour-là ? */
 export function jourOuvert(date: Date): boolean {
-  return OUVERTURE[date.getDay()] != null;
+  return OUVERTURE[partiesLocales(date).jourSemaine] != null;
 }
 
 /**
@@ -75,7 +80,10 @@ export function creneauxDuJour(
   occupes: readonly string[] = [],
   maintenant: Date = new Date(),
 ): Creneau[] {
-  const horaires = OUVERTURE[date.getDay()];
+  // Jour de la semaine À L'HEURE DE L'INSTITUT, pas à celle du runtime :
+  // un serveur en UTC voit encore la veille pendant la première heure de
+  // la journée marocaine.
+  const horaires = OUVERTURE[partiesLocales(date).jourSemaine];
   if (!horaires) return [];
 
   const debut = horaires.debut * 60;
@@ -83,10 +91,8 @@ export function creneauxDuJour(
   const pris = new Set(occupes);
 
   // Seuil en dessous duquel on ne propose plus rien aujourd'hui.
-  const memeJour = cleJour(date) === cleJour(maintenant);
-  const seuil = memeJour
-    ? maintenant.getHours() * 60 + maintenant.getMinutes() + DELAI_MINIMUM_H * 60
-    : -1;
+  const memeJour = cleJourLocale(date) === cleJourLocale(maintenant);
+  const seuil = memeJour ? minutesDansLaJournee(maintenant) + DELAI_MINIMUM_H * 60 : -1;
 
   const liste: Creneau[] = [];
 
@@ -113,11 +119,13 @@ export function joursReservables(depuis: Date = new Date()): {
 }[] {
   const jours: { date: Date; cle: string; ouvert: boolean }[] = [];
 
+  const base = partiesLocales(depuis);
+
   for (let i = 0; i < HORIZON_JOURS; i += 1) {
-    const d = new Date(depuis);
-    d.setDate(d.getDate() + i);
-    d.setHours(0, 0, 0, 0);
-    jours.push({ date: d, cle: cleJour(d), ouvert: jourOuvert(d) });
+    // On avance jour par jour EN HEURE INSTITUT : ajouter 24 h à un
+    // instant décale d'une heure les jours de changement d'heure.
+    const d = instantLocal(base.an, base.mois, base.jour + i);
+    jours.push({ date: d, cle: cleJourLocale(d), ouvert: jourOuvert(d) });
   }
 
   return jours;
@@ -142,12 +150,17 @@ export function creneauValide(
   const [an, mois, jour] = dateISO.split('-').map(Number);
   const minutes = versMinutes(heure);
 
-  // Construction en heure LOCALE, volontairement : `new Date('2026-07-14')`
-  // serait interprété en UTC et décalerait le rendez-vous.
-  const debut = new Date(an, mois - 1, jour, Math.floor(minutes / 60), minutes % 60, 0, 0);
+  // ⚠️  Construction à L'HEURE DE L'INSTITUT, jamais celle du runtime.
+  //
+  //     `new Date(an, mois - 1, jour, h, m)` interprète l'heure dans le
+  //     fuseau de la machine. Le même « 15:00 » donnait 14:00 UTC depuis
+  //     un navigateur marocain, 13:00 UTC depuis une machine en UTC+2 et
+  //     15:00 UTC depuis Vercel — soit 16 h au Maroc. La cliente
+  //     réservait 15 h et se voyait confirmer 16 h.
+  const debut = instantLocal(an, mois, jour, Math.floor(minutes / 60), minutes % 60);
   if (Number.isNaN(debut.getTime())) return null;
 
-  const horaires = OUVERTURE[debut.getDay()];
+  const horaires = OUVERTURE[partiesLocales(debut).jourSemaine];
   if (!horaires) return null;
 
   // Le créneau doit tomber sur le pas : ni 14:07, ni 14:15.

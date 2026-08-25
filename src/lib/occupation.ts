@@ -2,6 +2,7 @@ import 'server-only';
 
 import { adminDb } from '@/lib/firebase/admin';
 import { creneauxDuJour } from '@/lib/creneaux';
+import { debutDeJournee, instantLocal, partiesLocales } from '@/lib/fuseau';
 
 import type { Query, Transaction } from 'firebase-admin/firestore';
 
@@ -130,10 +131,12 @@ export async function creneauLibreDansTransaction(
  * connexion.
  */
 export async function heuresOccupees(jour: Date, dureeMinutes: number): Promise<string[]> {
-  const debutJour = new Date(jour);
-  debutJour.setHours(0, 0, 0, 0);
-  const finJour = new Date(debutJour);
-  finJour.setDate(finJour.getDate() + 1);
+  // Minuit À L'HEURE DE L'INSTITUT. `setHours(0,0,0,0)` sur un serveur en
+  // UTC donnerait minuit UTC, soit 1 h du matin au Maroc : les rendez-vous
+  // de la première heure passeraient à travers.
+  const debutJour = debutDeJournee(jour);
+  const p = partiesLocales(debutJour);
+  const finJour = instantLocal(p.an, p.mois, p.jour + 1);
 
   const snap = await requeteVoisins(debutJour, finJour).get();
   if (snap.empty) return [];
@@ -141,8 +144,7 @@ export async function heuresOccupees(jour: Date, dureeMinutes: number): Promise<
   const occupees: string[] = [];
 
   for (const creneau of creneauxDuJour(debutJour, dureeMinutes)) {
-    const debut = new Date(debutJour);
-    debut.setMinutes(creneau.minutes);
+    const debut = new Date(debutJour.getTime() + creneau.minutes * 60_000);
     const fin = new Date(debut.getTime() + dureeMinutes * 60_000);
 
     if (filtrerConflits(snap.docs, { debut, fin }) >= PLACES_SIMULTANEES) {

@@ -1,3 +1,4 @@
+import { FUSEAU } from '@/lib/fuseau';
 import clsx, { type ClassValue } from 'clsx';
 
 import { site } from '@/data/site';
@@ -39,7 +40,8 @@ export function duree(minutes: number): string {
 export function dateLongue(valeur: string | Date | number): string {
   const d = valeur instanceof Date ? valeur : new Date(valeur);
   if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  return d.toLocaleDateString('fr-FR', {
+    timeZone: FUSEAU, day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 /** Date + heure → « mar. 14 juil., 15:30 ». */
@@ -47,6 +49,7 @@ export function dateHeure(valeur: string | Date | number): string {
   const d = valeur instanceof Date ? valeur : new Date(valeur);
   if (Number.isNaN(d.getTime())) return '';
   return d.toLocaleDateString('fr-FR', {
+    timeZone: FUSEAU,
     weekday: 'short',
     day: 'numeric',
     month: 'short',
@@ -59,14 +62,16 @@ export function dateHeure(valeur: string | Date | number): string {
 export function dateCourte(valeur: string | Date | number): string {
   const d = valeur instanceof Date ? valeur : new Date(valeur);
   if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return d.toLocaleDateString('fr-FR', {
+    timeZone: FUSEAU, day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
 /** Heure seule → « 15:30 ». */
 export function heure(valeur: string | Date | number): string {
   const d = valeur instanceof Date ? valeur : new Date(valeur);
   if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleTimeString('fr-FR', {
+    timeZone: FUSEAU, hour: '2-digit', minute: '2-digit' });
 }
 
 /**
