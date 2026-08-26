@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { Encart, Filet, TitreSection } from '@/components/ui/Bits';
 import { Icon } from '@/components/ui/Icon';
 import { histoire } from '@/data/galerie';
-import { contact, site } from '@/data/site';
+import { contact, site, lignesAdresse } from '@/data/site';
 
 export const metadata: Metadata = {
   title: 'À propos — l’institut, l’équipe, les produits',
@@ -208,7 +208,7 @@ export default function PageAPropos() {
             {contact.city}, et <span className="italic text-champagnesoft">chez vous</span>
           </h2>
           <p className="mt-5 text-[0.9375rem] leading-relaxed text-onshell">
-            {contact.street}, {contact.city}. Et pour les soins à domicile :{' '}
+            {lignesAdresse().join(', ')}. Et pour les soins à domicile :{' '}
             {contact.homeServiceArea}.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">

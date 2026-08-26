@@ -6,7 +6,7 @@ import { EnTetePage } from '@/components/layout/EnTetePage';
 import { Reveal } from '@/components/motion/Reveal';
 import { Squelette } from '@/components/ui/Bits';
 import { Icon } from '@/components/ui/Icon';
-import { contact, estAComplete, site, social } from '@/data/site';
+import { contact, estAComplete, site, social, lignesAdresse } from '@/data/site';
 
 export const metadata: Metadata = {
   title: 'Contact',
@@ -100,10 +100,12 @@ export default function PageContact() {
                   <span className="flex items-start gap-2.5">
                     <Icon nom="position" taille={16} className="mt-0.5 shrink-0 text-champagne" />
                     <span>
-                      {contact.street}
-                      <br />
-                      {contact.postalCode} {contact.city}
-                      <br />
+                      {lignesAdresse().map((l) => (
+                        <span key={l}>
+                          {l}
+                          <br />
+                        </span>
+                      ))}
                       {contact.country}
                     </span>
                   </span>

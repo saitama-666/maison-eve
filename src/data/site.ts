@@ -76,6 +76,30 @@ export function estAComplete(valeur: string): boolean {
   return /\[[^\]]*\]/.test(valeur) || /0{6,}/.test(sansSeparateur);
 }
 
+/**
+ * Les lignes d'adresse réellement affichables, dans l'ordre.
+ *
+ * ⚠️  La rue et le code postal sont encore des gabarits. Les afficher tels
+ *     quels donne « [adresse à compléter] » en clair sur le site public —
+ *     ce qui est PIRE que de ne rien montrer : ça dit au visiteur que le
+ *     site n'est pas fini, sur chaque page.
+ *
+ *     La ville et le pays, eux, sont vrais. On les garde : « Casablanca,
+ *     Maroc » informe honnêtement, sans rien inventer.
+ *
+ *     Les pages légales n'utilisent PAS ce helper : leurs crochets sont
+ *     délibérés, ils signalent une obligation encore non remplie.
+ */
+export function lignesAdresse(): string[] {
+  const lignes: string[] = [];
+  if (!estAComplete(contact.street)) lignes.push(contact.street);
+  const ville = [estAComplete(contact.postalCode) ? '' : contact.postalCode, contact.city]
+    .filter(Boolean)
+    .join(' ');
+  lignes.push(ville);
+  return lignes;
+}
+
 export const social = {
   // [placeholder] — remplacer par les vrais comptes. Laisser une URL de
   // plateforme générique donne un lien mort qui décrédibilise le site.

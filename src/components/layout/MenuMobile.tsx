@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
-import { contact, estAComplete, navPrincipale, social } from '@/data/site';
+import { contact, estAComplete, navPrincipale, social, lignesAdresse } from '@/data/site';
 import { useAuth } from '@/lib/auth-context';
 import { cn } from '@/lib/utils';
 
@@ -179,7 +179,7 @@ export function MenuMobile({ ouvert, fermer }: { ouvert: boolean; fermer: () => 
           </a>
           <span className="inline-flex items-start gap-2.5">
             <Icon nom="position" taille={15} className="mt-0.5 shrink-0" />
-            {contact.street}, {contact.city}
+            {lignesAdresse().join(', ')}
           </span>
 
           {/* Seuls les comptes renseignés : un `href` resté à l'état de

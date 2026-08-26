@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/Button';
 import { Case, Champ, Liste, Segments, ZoneTexte } from '@/components/ui/Field';
 import { Icon } from '@/components/ui/Icon';
 import type { Service } from '@/data/services';
-import { contact } from '@/data/site';
+import { contact, lignesAdresse } from '@/data/site';
 import { adresseEnLigne, listerAdresses, type Adresse } from '@/lib/addresses';
 import { useAuth } from '@/lib/auth-context';
 import { useServices } from '@/lib/catalogue-context';
@@ -643,7 +643,7 @@ function EtapeLieu({
             <>
               <h3 className="font-display text-xl text-ink">Chez nous</h3>
               <p className="text-sm leading-relaxed text-muted">
-                {contact.street}, {contact.city}. Arrivez dix minutes avant : elles servent à
+                {lignesAdresse().join(', ')}. Arrivez dix minutes avant : elles servent à
                 parler de vos zones sensibles et à choisir la pression.
               </p>
               <div className="mt-1 flex flex-col gap-1 text-sm text-muted">

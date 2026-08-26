@@ -4,7 +4,7 @@ import { Lettre } from '@/components/layout/Lettre';
 import { Reveal, RevealGroup, RevealItem } from '@/components/motion/Reveal';
 import { Icon } from '@/components/ui/Icon';
 import { Logo } from '@/components/ui/Logo';
-import { contact, estAComplete, navPied, site, social } from '@/data/site';
+import { contact, estAComplete, navPied, site, social, lignesAdresse } from '@/data/site';
 
 // =====================================================================
 //  Pied de page.
@@ -46,9 +46,13 @@ export function Footer() {
               <span className="flex items-start gap-2.5">
                 <Icon nom="position" taille={15} className="mt-0.5 shrink-0 text-champagnesoft" />
                 <span>
-                  {contact.street}
-                  <br />
-                  {contact.postalCode} {contact.city}, {contact.country}
+                  {lignesAdresse().map((l, i) => (
+                    <span key={l}>
+                      {i > 0 && <br />}
+                      {l}
+                    </span>
+                  ))}
+                  , {contact.country}
                 </span>
               </span>
 
