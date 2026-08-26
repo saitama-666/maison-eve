@@ -52,7 +52,7 @@ export function FaqAccueil() {
           <div className="relative">
             <RevealVisuel className="relative aspect-[4/5] rounded-2xl">
               <Image
-                src="/bandeaux/faq.svg"
+                src="/bandeaux/faq.jpg"
                 alt="Détail de la cabine de soin"
                 fill
                 sizes="(max-width: 1024px) 100vw, 40vw"

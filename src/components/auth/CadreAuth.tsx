@@ -32,7 +32,7 @@ export function CadreAuth({
   sousTitre,
   children,
   pied,
-  visuel = '/bandeaux/institut.svg',
+  visuel = '/bandeaux/institut.jpg',
 }: {
   titre: string;
   sousTitre: string;

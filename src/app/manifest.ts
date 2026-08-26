@@ -9,11 +9,13 @@ import { site } from '@/data/site';
 //  couleurs reprennent les jetons de `globals.css` : le moka en fond, le
 //  crème en surface.
 //
-//  ⚠️  Les icônes ne sont pas encore fournies. Tant qu'un vrai logo
-//      n'existe pas en PNG 192 et 512, on n'en déclare aucune : déclarer
-//      un fichier absent fait échouer l'installation côté navigateur,
-//      alors qu'un manifeste sans icône se contente d'utiliser une
-//      capture de la page. Voir PROGRESS.md §11.
+//  Les icônes existent désormais : le lotus de `Logo.tsx`, rastérisé en
+//  PNG. La version « maskable » porte une marge, parce qu'Android rogne
+//  l'icône dans un cercle de 80 % — sans marge, il mange les pétales.
+//
+//  ⚠️  Ne déclarer que des fichiers qui existent VRAIMENT : un manifeste
+//      qui pointe vers une icône absente fait échouer l'installation,
+//      alors qu'un manifeste sans icône se contente d'une capture.
 // =====================================================================
 
 export default function manifest(): MetadataRoute.Manifest {
@@ -27,5 +29,15 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: '#6f5f52',
     lang: 'fr',
     categories: ['beauty', 'health', 'lifestyle'],
+    icons: [
+      { src: '/icones/icone-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+      { src: '/icones/icone-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+      {
+        src: '/icones/icone-maskable-512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable',
+      },
+    ],
   };
 }

@@ -13,13 +13,15 @@
     "set-admin": "node scripts/set-admin.mjs",
     "rules:deploy": "node scripts/deploy-rules.mjs",
     "emulators": "firebase emulators:start",
-    "audit:keyframes": "python scripts/audit-keyframes.py"
+    "audit:keyframes": "python scripts/audit-keyframes.py",
+    "audit:visuels": "node scripts/audit-visuels.mjs",
+    "audit:catalogue": "node scripts/audit-catalogue.mjs",
+    "catalogue:aligner": "node scripts/aligner-images-catalogue.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.0",
     "firebase": "^11.0.0",
     "firebase-admin": "^13.0.0",
-    "framer-motion": "^12.0.0",
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

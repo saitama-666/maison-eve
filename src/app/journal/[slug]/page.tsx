@@ -36,8 +36,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       description: article.chapeau,
       publishedTime: article.publieLe,
       authors: [article.auteur],
-      images: [{ url: article.image }],
+      // Les visuels du journal sont déjà en paysage (≈1.79), donc
+      // proches du 1200×630 attendu : un recadrage sur les bords, jamais
+      // sur le sujet. On les garde tels quels.
+      images: [{ url: article.image, width: 2400, height: 1340, alt: article.titre }],
     },
+    twitter: { card: 'summary_large_image', images: [article.image] },
   };
 }
 
@@ -97,6 +101,7 @@ export default async function PageArticle({ params }: Params) {
         texte={article.chapeau}
         image={article.image}
         filAriane={[{ label: 'Journal', href: '/journal' }, { label: article.titre }]}
+        disposition="dessous"
       />
 
       <article className="bg-canvas py-12 sm:py-16 lg:py-24">

@@ -91,13 +91,22 @@ export function Hero() {
           Sur mobile la colonne passe dessous, en portrait franc. */}
       <div className="relative aspect-[4/5] w-full sm:aspect-[16/10] lg:aspect-auto lg:min-h-full">
         <Image
-          src="/bandeaux/accueil.svg"
+          src="/bandeaux/accueil.jpg"
           alt=""
           fill
           priority
           sizes="(max-width: 1024px) 100vw, 46vw"
           className="object-cover"
         />
+
+        {/*
+          À partir de `lg`, la colonne image remonte sous l'en-tête fixe,
+          et les derniers liens de la barre passent dessus. Ce dégradé
+          leur rend un fond sombre. En dessous de `lg` la colonne est
+          SOUS le texte, l'en-tête ne la touche pas : pas de dégradé, il
+          n'assombrirait le haut de la photo pour rien.
+        */}
+        <div className="voile-entete pointer-events-none absolute inset-x-0 top-0 hidden h-[140px] lg:block" />
       </div>
       </div>
     </section>

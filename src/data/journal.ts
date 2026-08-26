@@ -35,7 +35,7 @@ export const articles: readonly Article[] = [
     publieLe: '2026-07-14',
     auteur: 'MAISON EVE',
     lecture: 5,
-    image: '/journal/hammam.svg',
+    image: '/journal/hammam.jpg',
     corps: [
       {
         type: 'p',
@@ -103,7 +103,7 @@ export const articles: readonly Article[] = [
     publieLe: '2026-06-22',
     auteur: 'MAISON EVE',
     lecture: 4,
-    image: '/journal/argan.svg',
+    image: '/journal/argan.jpg',
     corps: [
       {
         type: 'p',
@@ -153,7 +153,7 @@ export const articles: readonly Article[] = [
     publieLe: '2026-05-30',
     auteur: 'MAISON EVE',
     lecture: 3,
-    image: '/journal/domicile.svg',
+    image: '/journal/domicile.jpg',
     corps: [
       {
         type: 'p',
@@ -208,7 +208,7 @@ export const articles: readonly Article[] = [
     publieLe: '2026-04-18',
     auteur: 'MAISON EVE',
     lecture: 4,
-    image: '/journal/hiver.svg',
+    image: '/journal/hiver.jpg',
     corps: [
       {
         type: 'p',

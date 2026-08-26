@@ -93,7 +93,7 @@ export const services: readonly Service[] = [
     prix: 400,
     supplementDomicile: 150,
     domicileDisponible: true,
-    image: '/soins/massage-traditionnel.svg',
+    image: '/soins/massage-traditionnel.jpg',
     bienfaits: [
       'Relâche les tensions du dos et de la nuque',
       'Améliore la qualité du sommeil',
@@ -124,7 +124,7 @@ export const services: readonly Service[] = [
     prix: 480,
     supplementDomicile: 150,
     domicileDisponible: true,
-    image: '/soins/massage-argan.svg',
+    image: '/soins/massage-argan.jpg',
     bienfaits: [
       'Nourrit les peaux sèches en profondeur',
       'Assouplit la peau durablement',
@@ -155,7 +155,7 @@ export const services: readonly Service[] = [
     prix: 620,
     supplementDomicile: 200,
     domicileDisponible: true,
-    image: '/soins/pierres-chaudes.svg',
+    image: '/soins/pierres-chaudes.jpg',
     bienfaits: [
       'Dénoue les tensions profondes',
       'Réchauffe durablement',
@@ -186,7 +186,7 @@ export const services: readonly Service[] = [
     prix: 450,
     supplementDomicile: 150,
     domicileDisponible: true,
-    image: '/soins/massage-prenatal.svg',
+    image: '/soins/massage-prenatal.jpg',
     bienfaits: [
       'Soulage le bas du dos et le bassin',
       'Réduit les jambes lourdes',
@@ -218,7 +218,7 @@ export const services: readonly Service[] = [
     prix: 350,
     supplementDomicile: 0,
     domicileDisponible: false,
-    image: '/soins/hammam-savon-noir.svg',
+    image: '/soins/hammam-savon-noir.jpg',
     bienfaits: [
       'Élimine les peaux mortes',
       'Resserre les pores',
@@ -249,7 +249,7 @@ export const services: readonly Service[] = [
     prix: 280,
     supplementDomicile: 0,
     domicileDisponible: false,
-    image: '/soins/rituel-ghassoul.svg',
+    image: '/soins/rituel-ghassoul.jpg',
     bienfaits: [
       'Lave sans détergent',
       'Absorbe l’excès de sébum',
@@ -281,7 +281,7 @@ export const services: readonly Service[] = [
     prix: 420,
     supplementDomicile: 120,
     domicileDisponible: true,
-    image: '/soins/soin-visage-rose.svg',
+    image: '/soins/soin-visage-rose.jpg',
     bienfaits: [
       'Nettoie sans décaper',
       'Hydrate en profondeur',
@@ -312,7 +312,7 @@ export const services: readonly Service[] = [
     prix: 380,
     supplementDomicile: 120,
     domicileDisponible: true,
-    image: '/soins/soin-visage-eclat.svg',
+    image: '/soins/soin-visage-eclat.jpg',
     bienfaits: [
       'Ravive un teint terne',
       'Décongestionne les traits',
@@ -344,7 +344,7 @@ export const services: readonly Service[] = [
     prix: 1200,
     supplementDomicile: 0,
     domicileDisponible: false,
-    image: '/soins/rituel-maison-eve.svg',
+    image: '/soins/rituel-maison-eve.jpg',
     bienfaits: [
       'Le parcours complet en une séance',
       'Pause thé incluse',
@@ -375,7 +375,7 @@ export const services: readonly Service[] = [
     prix: 760,
     supplementDomicile: 250,
     domicileDisponible: true,
-    image: '/soins/rituel-duo.svg',
+    image: '/soins/rituel-duo.jpg',
     bienfaits: [
       'Deux praticiennes, une seule salle',
       'Tarif pour deux personnes',

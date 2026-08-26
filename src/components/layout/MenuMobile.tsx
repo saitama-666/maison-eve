@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
-import { contact, navPrincipale, social } from '@/data/site';
+import { contact, estAComplete, navPrincipale, social } from '@/data/site';
 import { useAuth } from '@/lib/auth-context';
 import { cn } from '@/lib/utils';
 
@@ -182,6 +182,8 @@ export function MenuMobile({ ouvert, fermer }: { ouvert: boolean; fermer: () => 
             {contact.street}, {contact.city}
           </span>
 
+          {/* Seuls les comptes renseignés : un `href` resté à l'état de
+              gabarit produisait un lien mort. */}
           <div className="mt-3 flex gap-2">
             {(
               [
@@ -189,7 +191,9 @@ export function MenuMobile({ ouvert, fermer }: { ouvert: boolean; fermer: () => 
                 ['facebook', social.facebook],
                 ['tiktok', social.tiktok],
               ] as const
-            ).map(([nom, url]) => (
+            )
+              .filter(([, url]) => !estAComplete(url))
+              .map(([nom, url]) => (
               <a
                 key={nom}
                 href={url}
@@ -198,9 +202,9 @@ export function MenuMobile({ ouvert, fermer }: { ouvert: boolean; fermer: () => 
                 aria-label={nom}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full ring-1 ring-onshellmuted/25 transition-colors duration-[140ms] hover:bg-white/10 hover:text-onshell"
               >
-                <Icon nom={nom} taille={17} />
-              </a>
-            ))}
+                  <Icon nom={nom} taille={17} />
+                </a>
+              ))}
           </div>
         </div>
       </div>

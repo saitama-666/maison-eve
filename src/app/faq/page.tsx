@@ -60,7 +60,7 @@ export default function PageFaq() {
           </>
         }
         texte="Tout ce qu’on nous demande avant un premier rendez-vous."
-        image="/bandeaux/faq.svg"
+        image="/bandeaux/faq.jpg"
         filAriane={[{ label: 'Questions fréquentes' }]}
         hauteur="court"
       />

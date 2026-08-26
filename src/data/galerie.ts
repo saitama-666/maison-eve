@@ -37,19 +37,32 @@ export type Visuel = {
 /**
  * Visuels de la galerie.
  *
- * ⚠️  Ce sont des ILLUSTRATIONS SVG générées, pas des photos de
- *     l'institut. Elles tiennent la mise en page en attendant les vraies
- *     photos. À remplacer avant la mise en ligne — voir PROGRESS.md §11.
+ * ⚠️  LE FORMAT DÉCLARÉ DOIT SUIVRE LE FORMAT DU FICHIER, JAMAIS
+ *     L'INVERSE.
+ *
+ *     `format` choisit le cadre de la tuile : portrait → 3/4,
+ *     paysage → 4/3, carré → 1/1. L'image est ensuite recadrée en
+ *     `object-cover` pour le remplir. Déclarer `paysage` sur une photo
+ *     en portrait lui coupe 44 % de sa hauteur — le sujet disparaît et
+ *     personne ne voit passer l'erreur, parce qu'une image recadrée
+ *     reste une image plausible.
+ *
+ *     Ici : `hammam` et `ghassoul` sont les deux seuls fichiers
+ *     réellement en paysage. Tous les autres sont en 3:4. `carré` ne
+ *     coupe que 25 %, réservé aux gros plans d'objets centrés.
+ *
+ * ⚠️  Ce sont des visuels générés, pas des photos de l'institut. À
+ *     remplacer par de vraies prises de vue — voir PROGRESS.md §11.
  */
 export const galerie: readonly Visuel[] = [
-  { src: '/galerie/salle-soin.svg', alt: 'Cabine de soin, lumière tamisée', format: 'portrait', legende: 'La cabine' },
-  { src: '/galerie/huiles.svg', alt: 'Flacons d’huiles végétales sur un plateau', format: 'carre', legende: 'Les huiles' },
-  { src: '/galerie/hammam.svg', alt: 'Salle de hammam en tadelakt', format: 'paysage', legende: 'Le hammam' },
-  { src: '/galerie/savon-noir.svg', alt: 'Savon noir et gant de kessa', format: 'carre', legende: 'Le savon noir' },
-  { src: '/galerie/the.svg', alt: 'Théière et verres à thé', format: 'portrait', legende: 'La pause thé' },
-  { src: '/galerie/serviettes.svg', alt: 'Serviettes roulées et fleurs séchées', format: 'carre', legende: 'Les serviettes' },
-  { src: '/galerie/ghassoul.svg', alt: 'Ghassoul et eau de rose', format: 'paysage', legende: 'Le ghassoul' },
-  { src: '/galerie/accueil.svg', alt: 'Entrée de l’institut', format: 'portrait', legende: 'L’accueil' },
+  { src: '/galerie/salle-soin.jpg', alt: 'Cabine de soin, lumière tamisée', format: 'portrait', legende: 'La cabine' },
+  { src: '/galerie/huiles.jpg', alt: 'Flacons d’huiles végétales sur un plateau', format: 'carre', legende: 'Les huiles' },
+  { src: '/galerie/hammam.jpg', alt: 'Salle de hammam en tadelakt', format: 'paysage', legende: 'Le hammam' },
+  { src: '/galerie/savon-noir.jpg', alt: 'Savon noir et gant de kessa', format: 'carre', legende: 'Le savon noir' },
+  { src: '/galerie/the.jpg', alt: 'Théière et verres à thé', format: 'portrait', legende: 'La pause thé' },
+  { src: '/galerie/serviettes.jpg', alt: 'Serviettes roulées et fleurs séchées', format: 'carre', legende: 'Les serviettes' },
+  { src: '/galerie/ghassoul.jpg', alt: 'Ghassoul et eau de rose', format: 'paysage', legende: 'Le ghassoul' },
+  { src: '/galerie/accueil.jpg', alt: 'Entrée de l’institut', format: 'portrait', legende: 'L’accueil' },
 ] as const;
 
 /**

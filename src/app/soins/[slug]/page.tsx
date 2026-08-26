@@ -52,7 +52,28 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     openGraph: {
       title: `${service.nom} · ${site.name}`,
       description: service.resume,
-      images: [{ url: service.image }],
+      /*
+        PAS `service.image` : les photos de soin sont en PORTRAIT 3:4, et
+        les aperçus sociaux attendent du 1200×630. Un portrait s'y fait
+        rogner au centre — on y perdait le sujet, et le nom du soin
+        n'apparaissait nulle part.
+
+        `public/og/<slug>.jpg` est une version composée pour ce cadre :
+        la photo recadrée, un voile mesuré, et le nom du soin écrit
+        dessus. Régénérées par `scratchpad/og.py` si les photos changent.
+      */
+      images: [
+        {
+          url: `/og/${service.slug}.jpg`,
+          width: 1200,
+          height: 630,
+          alt: `${service.nom} — ${site.name}`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      images: [`/og/${service.slug}.jpg`],
     },
   };
 }

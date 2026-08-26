@@ -55,6 +55,27 @@ export const contact = {
   homeServiceArea: 'Casablanca et périphérie (Ain Diab, Anfa, Maârif, Californie, Bouskoura)',
 } as const;
 
+/**
+ * Vrai si la valeur est encore un gabarit, jamais renseigne.
+ *
+ * ⚠️  A UTILISER AVANT D'AFFICHER OU DE PUBLIER UNE COORDONNEE.
+ *
+ *     Les gabarits ci-dessous ne sont pas inertes : ils SORTAIENT.
+ *       · `social.instagram` valait `[url Instagram]`, et le pied de page
+ *         en faisait un `<a href="[url Instagram]">`. Sur chaque page du
+ *         site, trois icones menaient a un 404 — pire que pas d'icone.
+ *       · l'adresse et le telephone factices partaient dans les donnees
+ *         structurees, donc directement chez Google.
+ *
+ *     Un champ non renseigne doit DISPARAITRE, pas s'afficher vide.
+ */
+export function estAComplete(valeur: string): boolean {
+  // Deux formes de gabarit : les crochets (`[adresse a completer]`) et
+  // les numeros de remplissage, qu'ils soient espaces ou non.
+  const sansSeparateur = valeur.replace(/[\s.\-()]/g, '');
+  return /\[[^\]]*\]/.test(valeur) || /0{6,}/.test(sansSeparateur);
+}
+
 export const social = {
   // [placeholder] — remplacer par les vrais comptes. Laisser une URL de
   // plateforme générique donne un lien mort qui décrédibilise le site.

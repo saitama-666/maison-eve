@@ -12,28 +12,42 @@ import { galerie } from '@/data/galerie';
 // =====================================================================
 //  « Nos instants » — mosaïque de la page d'accueil.
 //
-//  Six visuels en mosaïque irrégulière : deux occupent deux lignes, ce
-//  qui casse la grille et évite l'effet catalogue. La composition est
-//  celle de la maquette.
+//  Six visuels en mosaïque irrégulière, qui casse la grille et évite
+//  l'effet catalogue.
 //
 //  Chaque vignette ouvre la visionneuse. C'est un `<button>`, pas une
 //  `<div>` cliquable : le clavier et les lecteurs d'écran l'atteignent
 //  sans qu'on ait à réimplémenter le rôle, le focus et la touche Entrée.
+//
+//  ⚠️  LA FORME DE LA TUILE SUIT LA FORME DU FICHIER, JAMAIS L'INVERSE.
+//
+//      La mosaïque d'origine posait cinq tuiles en paysage (≈1.7) et une
+//      seule en portrait. Nos photos sont l'inverse : quatre portraits en
+//      3:4 pour deux paysages. Chaque portrait perdait 55 % de sa hauteur
+//      — et ça ne se voyait pas, parce qu'une photo recadrée reste une
+//      photo plausible. C'est exactement ce qui rend cette erreur chère :
+//      elle ne casse rien, elle abîme.
+//
+//      La règle tient en une ligne : un paysage prend deux colonnes, un
+//      portrait une seule, et toutes les tuiles prennent deux lignes.
+//      La portée n'est donc plus une constante posée à la main, elle est
+//      DÉDUITE de `format`.
+//
+//  ⚠️  L'ARITHMÉTIQUE DOIT TOMBER JUSTE.
+//      La grille fait quatre colonnes. La somme des largeurs doit être un
+//      multiple de 4, sinon la dernière bande garde un trou.
+//      Ici : 2 paysages ×2 + 4 portraits ×1 = 8. Si on change la
+//      sélection ci-dessous, on refait ce calcul.
 // =====================================================================
 
-/** Les six premiers visuels, avec leur portée dans la grille. */
-const PORTEE = [
-  'sm:col-span-2 sm:row-span-2',
-  'sm:col-span-1 sm:row-span-1',
-  'sm:col-span-1 sm:row-span-1',
-  'sm:col-span-1 sm:row-span-2',
-  'sm:col-span-1 sm:row-span-1',
-  'sm:col-span-1 sm:row-span-1',
-];
+/** Les six visuels de la mosaïque, choisis pour que le compte tombe juste. */
+const MOSAIQUE = ['hammam', 'salle-soin', 'huiles', 'savon-noir', 'the', 'ghassoul'] as const;
 
 export function Moments() {
   const [ouvert, setOuvert] = useState<number | null>(null);
-  const visuels = galerie.slice(0, 6);
+  // `flatMap` plutôt que `find` + `!` : si un nom disparaît de la galerie,
+  // la tuile s'efface au lieu de faire planter le rendu.
+  const visuels = MOSAIQUE.flatMap((n) => galerie.filter((v) => v.src === `/galerie/${n}.jpg`));
 
   return (
     <section className="bg-canvas py-14 sm:py-20 lg:py-28">
@@ -57,10 +71,17 @@ export function Moments() {
 
         <RevealGroup
           intervalle={0.06}
-          className="mt-12 grid auto-rows-[190px] grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4"
+          className="mt-12 grid auto-rows-[230px] grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4"
         >
           {visuels.map((v, i) => (
-            <RevealItem key={v.src} className={PORTEE[i] ?? ''}>
+            <RevealItem
+              key={v.src}
+              className={
+                v.format === 'paysage'
+                  ? 'sm:col-span-2 sm:row-span-2'
+                  : 'sm:col-span-1 sm:row-span-2'
+              }
+            >
               <button
                 type="button"
                 onClick={() => setOuvert(i)}
@@ -71,7 +92,7 @@ export function Moments() {
                   src={v.src}
                   alt={v.alt}
                   fill
-                  sizes="(max-width: 640px) 50vw, 25vw"
+                  sizes={`(max-width: 640px) 50vw, ${v.format === 'paysage' ? '50vw' : '25vw'}`}
                   className="object-cover"
                 />
 
@@ -87,8 +108,14 @@ export function Moments() {
         </RevealGroup>
       </div>
 
+      {/*
+        La visionneuse reçoit `visuels`, PAS `galerie` : `ouvert` est un
+        index dans les tuiles affichées. Tant que la mosaïque était un
+        `slice(0, 6)` les deux coïncidaient ; avec une sélection ordonnée
+        à la main, passer `galerie` ouvrirait la mauvaise photo.
+      */}
       <Lightbox
-        visuels={galerie}
+        visuels={visuels}
         index={ouvert}
         fermer={() => setOuvert(null)}
         aller={(i) => setOuvert(i)}

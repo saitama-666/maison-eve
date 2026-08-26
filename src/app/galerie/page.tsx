@@ -25,7 +25,7 @@ export default function PageGalerie() {
           </>
         }
         texte="La cabine, le hammam, les huiles. Aucune surprise en poussant la porte."
-        image="/galerie/hammam.svg"
+        image="/bandeaux/galerie.jpg"
         filAriane={[{ label: 'Galerie' }]}
         action={
           <Button href="/reservation" variante="clair" fleche>

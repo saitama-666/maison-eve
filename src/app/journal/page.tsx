@@ -44,7 +44,7 @@ export default async function PageJournal() {
           </>
         }
         texte="Ce qu’on explique aux clientes en cabine, écrit noir sur blanc."
-        image="/journal/hammam.svg"
+        image="/bandeaux/journal.jpg"
         filAriane={[{ label: 'Journal' }]}
         hauteur="court"
       />

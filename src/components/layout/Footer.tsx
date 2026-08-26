@@ -4,7 +4,7 @@ import { Lettre } from '@/components/layout/Lettre';
 import { Reveal, RevealGroup, RevealItem } from '@/components/motion/Reveal';
 import { Icon } from '@/components/ui/Icon';
 import { Logo } from '@/components/ui/Logo';
-import { contact, navPied, site, social } from '@/data/site';
+import { contact, estAComplete, navPied, site, social } from '@/data/site';
 
 // =====================================================================
 //  Pied de page.
@@ -93,7 +93,7 @@ export function Footer() {
               <li key={l.href}>
                 <Link
                   href={l.href}
-                  className="text-xs text-onshellmuted transition-colors duration-[140ms] hover:text-onshell"
+                  className="inline-block py-1 text-xs text-onshellmuted transition-colors duration-[140ms] hover:text-onshell"
                 >
                   {l.label}
                 </Link>
@@ -122,9 +122,12 @@ function ColonneLiens({
       <ul className="flex flex-col gap-2.5">
         {liens.map((l) => (
           <RevealItem key={l.href} as="li">
+            {/* `py-0.5` : sans lui la zone cliquable fait 20 px de haut,
+                sous le minimum de 24 px du critère 2.5.8 (WCAG 2.2). Le
+                rendu ne change pas, la cible oui. */}
             <Link
               href={l.href}
-              className="souligne inline-block text-sm text-onshellmuted transition-colors duration-[140ms] hover:text-onshell"
+              className="souligne inline-block py-0.5 text-sm text-onshellmuted transition-colors duration-[140ms] hover:text-onshell"
             >
               {l.label}
             </Link>
@@ -136,11 +139,15 @@ function ColonneLiens({
 }
 
 function Reseaux() {
+  // On ne rend QUE les comptes reellement renseignes. Un `href` encore a
+  // l'etat de gabarit produisait un lien mort sur toutes les pages.
   const liens = [
     { nom: 'instagram' as const, url: social.instagram, label: 'Instagram' },
     { nom: 'facebook' as const, url: social.facebook, label: 'Facebook' },
     { nom: 'tiktok' as const, url: social.tiktok, label: 'TikTok' },
-  ];
+  ].filter((l) => !estAComplete(l.url));
+
+  if (liens.length === 0) return null;
 
   return (
     <div className="flex gap-2">

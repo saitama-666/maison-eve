@@ -1,13 +1,12 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
+import { flushSync } from 'react-dom';
 
 import { CarteSoin } from '@/components/soins/CarteSoin';
 import { EtatVide } from '@/components/ui/Bits';
 import { Button } from '@/components/ui/Button';
 import { useCatalogue } from '@/lib/catalogue-context';
-import { EASE_OUT_EXPO, ressort } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 
 // =====================================================================
@@ -17,21 +16,52 @@ import { cn } from '@/lib/utils';
 //  injecté par le serveur. Aucun aller-retour réseau, donc le filtrage
 //  est instantané — c'est ce qui le rend agréable.
 //
-//  Deux détails de mouvement qui font tout :
+//  ⚠️  PLUS DE FRAMER MOTION ICI. Ne pas le réintroduire.
 //
-//   · `layout` sur chaque carte : quand la grille se recompose, les
-//     cartes qui restent GLISSENT à leur nouvelle place au lieu de
-//     sauter. C'est le rôle « continuité ».
+//      C'était le dernier fichier de la vitrine à l'importer, pour trois
+//      ornements : la pastille du filtre, le bouton bascule, et le
+//      glissement des cartes. Coût mesuré : **46 kB de JavaScript sur
+//      /soins, contre 3 kB sur toutes les autres pages vitrine** — sur la
+//      page qui vend, et pour une clientèle majoritairement sur mobile.
 //
-//   · La pastille active du filtre est un `layoutId` partagé : elle se
-//     déplace d'un onglet à l'autre.
+//      Les trois ornements sont maintenant en CSS ou en API native :
+//        · la pastille → l'onglet actif porte simplement son fond ;
+//        · la bascule  → une transition CSS sur `left` ;
+//        · les cartes  → l'API View Transitions, quand le navigateur
+//          l'a. Elle fait le même FLIP que Framer, en mieux, pour zéro
+//          octet. Sans elle, le filtre s'applique instantanément.
 //
-//  `mode="popLayout"` sur `AnimatePresence` : les cartes sortantes sont
-//  retirées du flux immédiatement, donc les restantes commencent à se
-//  replacer sans attendre la fin de l'animation de sortie.
+//      C'est la règle habituelle du projet, appliquée au mouvement :
+//      **l'animation est un ornement, jamais un prérequis**. Rien ici ne
+//      part masqué, rien n'attend une librairie pour devenir visible.
 // =====================================================================
 
 type Filtre = 'tous' | string;
+
+/**
+ * Applique un changement de filtre, avec le glissement des cartes si le
+ * navigateur sait le faire.
+ *
+ * `flushSync` est indispensable : `startViewTransition` photographie le
+ * DOM AVANT et APRÈS le rappel. Sans rendu synchrone, React mettrait à
+ * jour après la photo « après », et la transition n'animerait rien.
+ */
+function avecTransition(appliquer: () => void) {
+  const doc = document as Document & {
+    startViewTransition?: (cb: () => void) => unknown;
+  };
+
+  const mouvementRefuse =
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!doc.startViewTransition || mouvementRefuse) {
+    appliquer();
+    return;
+  }
+
+  doc.startViewTransition(() => flushSync(appliquer));
+}
 
 export function CatalogueSoins() {
   const { services, categories } = useCatalogue();
@@ -57,14 +87,26 @@ export function CatalogueSoins() {
   return (
     <section className="bg-canvas py-12 sm:py-16 lg:py-20">
       <div className="mx-auto max-w-[1400px] px-5 sm:px-8">
-        {/* --- Filtres --- */}
-        <div className="flex flex-col gap-5 border-b border-line pb-7 lg:flex-row lg:items-center lg:justify-between">
-          <div
-            role="tablist"
-            aria-label="Filtrer par type de soin"
-            className="-mx-1 flex flex-wrap items-center gap-1 overflow-x-auto px-1"
-          >
-            <OngletFiltre actif={filtre === 'tous'} onClick={() => setFiltre('tous')}>
+        {/* --- Filtres ---
+            Des `<button>` avec `aria-pressed`, PAS `role="tab"`.
+
+            Un `role="tab"` promet un motif complet : navigation aux
+            flèches, un seul arrêt de tabulation pour le groupe, et un
+            `aria-controls` vers un `tabpanel`. Rien de tout ça n'existe
+            ici. Annoncer « onglet » sans le comportement laisse la
+            personne au lecteur d'écran chercher des touches qui ne font
+            rien — c'est pire que de ne rien annoncer. Un bouton à deux
+            états dit exactement ce qui se passe. */}
+        <div
+          role="group"
+          aria-label="Filtrer par type de soin"
+          className="flex flex-col gap-5 border-b border-line pb-7 lg:flex-row lg:items-center lg:justify-between"
+        >
+          <div className="-mx-1 flex flex-wrap items-center gap-1 overflow-x-auto px-1">
+            <OngletFiltre
+              actif={filtre === 'tous'}
+              onClick={() => avecTransition(() => setFiltre('tous'))}
+            >
               Tous
               <span className="ml-1.5 text-[0.6875rem] opacity-60 tabular">{actifs.length}</span>
             </OngletFiltre>
@@ -72,7 +114,11 @@ export function CatalogueSoins() {
             {categoriesUtiles.map((c) => {
               const nombre = actifs.filter((s) => s.categorie === c.id).length;
               return (
-                <OngletFiltre key={c.id} actif={filtre === c.id} onClick={() => setFiltre(c.id)}>
+                <OngletFiltre
+                  key={c.id}
+                  actif={filtre === c.id}
+                  onClick={() => avecTransition(() => setFiltre(c.id))}
+                >
                   {c.nom}
                   <span className="ml-1.5 text-[0.6875rem] opacity-60 tabular">{nombre}</span>
                 </OngletFiltre>
@@ -84,7 +130,9 @@ export function CatalogueSoins() {
               elle mérite un filtre à part plutôt qu'une catégorie de plus. */}
           <button
             type="button"
-            onClick={() => setLieu((l) => (l === 'domicile' ? 'tous' : 'domicile'))}
+            onClick={() =>
+              avecTransition(() => setLieu((l) => (l === 'domicile' ? 'tous' : 'domicile')))
+            }
             aria-pressed={lieu === 'domicile'}
             className={cn(
               'inline-flex shrink-0 items-center gap-2.5 self-start rounded-full px-4 py-2.5 text-[0.8125rem] ring-1 ring-inset transition-colors duration-[140ms] lg:self-auto',
@@ -100,11 +148,13 @@ export function CatalogueSoins() {
                 lieu === 'domicile' ? 'bg-champagne' : 'bg-line',
               )}
             >
-              <motion.span
-                layout
-                transition={ressort}
+              {/* Le curseur glisse par transition CSS. S'il ne glisse pas,
+                  il est déjà au bon endroit : rien n'est perdu qu'un
+                  mouvement. */}
+              <span
                 className={cn(
                   'absolute top-0.5 h-3 w-3 rounded-full bg-card shadow-sm',
+                  'transition-[left] duration-[240ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none',
                   lieu === 'domicile' ? 'left-3.5' : 'left-0.5',
                 )}
               />
@@ -123,8 +173,10 @@ export function CatalogueSoins() {
               <Button
                 variante="secondaire"
                 onClick={() => {
-                  setFiltre('tous');
-                  setLieu('tous');
+                  avecTransition(() => {
+                    setFiltre('tous');
+                    setLieu('tous');
+                  });
                 }}
               >
                 Tout afficher
@@ -132,35 +184,24 @@ export function CatalogueSoins() {
             }
           />
         ) : (
-          <motion.div layout className="mt-8 grid gap-5 sm:mt-10 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <AnimatePresence mode="popLayout">
-              {/*
-                ⚠️  PAS D'ANIMATION D'ENTRÉE ICI. Ne pas remettre `initial`.
-
-                Les cartes portaient `initial={{ opacity: 0 }}`. Framer
-                l'écrivait donc dans le HTML du serveur : les douze cartes
-                du catalogue arrivaient INVISIBLES et n'apparaissaient
-                qu'une fois la librairie démarrée. Sur cette page, c'est
-                tout le contenu utile.
-
-                Il reste `layout` (les cartes glissent à leur nouvelle
-                place quand on filtre) et `exit` (elles s'effacent en
-                sortant) : ces deux-là ne se jouent qu'après une action de
-                la visiteuse, donc jamais au premier affichage.
-              */}
-              {visibles.map((s, i) => (
-                <motion.div
-                  key={s.id}
-                  layout
-                  exit={{ opacity: 0, scale: 0.96, transition: { duration: 0.16 } }}
-                  transition={{ duration: 0.34, ease: EASE_OUT_EXPO }}
-                  className="h-full"
-                >
-                  <CarteSoin service={s} priorite={i < 3} niveau={2} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
+          <div className="mt-8 grid gap-5 sm:mt-10 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+            {visibles.map((s, i) => (
+              <div
+                key={s.id}
+                className="h-full"
+                /*
+                  Un nom de transition UNIQUE par carte : c'est lui qui
+                  permet au navigateur de reconnaître la même carte avant
+                  et après le filtrage, et donc de la faire glisser.
+                  Préfixé, parce qu'un identifiant CSS ne peut pas
+                  commencer par un chiffre.
+                */
+                style={{ viewTransitionName: `soin-${s.id}` }}
+              >
+                <CarteSoin service={s} priorite={i < 3} niveau={2} />
+              </div>
+            ))}
+          </div>
         )}
 
         {/* Compte des résultats, annoncé aux lecteurs d'écran : sans ça,
@@ -186,23 +227,14 @@ function OngletFiltre({
   return (
     <button
       type="button"
-      role="tab"
-      aria-selected={actif}
+      aria-pressed={actif}
       onClick={onClick}
       className={cn(
-        'relative shrink-0 rounded-full px-4 py-2.5 text-[0.8125rem] transition-colors duration-[140ms]',
-        actif ? 'text-oncream' : 'text-muted hover:text-ink',
+        'shrink-0 rounded-full px-4 py-2.5 text-[0.8125rem] transition-colors duration-[140ms]',
+        actif ? 'bg-ink text-oncream' : 'text-muted hover:bg-canvas2 hover:text-ink',
       )}
     >
-      {actif && (
-        <motion.span
-          layoutId="filtre-soins"
-          aria-hidden
-          className="absolute inset-0 rounded-full bg-ink"
-          transition={ressort}
-        />
-      )}
-      <span className="relative z-10 whitespace-nowrap">{children}</span>
+      <span className="whitespace-nowrap">{children}</span>
     </button>
   );
 }

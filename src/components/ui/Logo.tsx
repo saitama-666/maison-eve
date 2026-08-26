@@ -47,6 +47,18 @@ export function Logo({ ton = 'clair', taille = 'md', marque = true, className }:
 
       <span className={cn('script', t.nom, marque && 'mt-1')}>Maison Eve</span>
 
+      {/*
+        Séparateur pour les lecteurs d'écran UNIQUEMENT.
+
+        Les deux lignes du logo sont deux éléments distincts, sans espace
+        entre eux dans le texte. Le nom accessible sortait donc collé :
+        « Maison EveBeauty & Spa ». Sur l'accueil, c'est le <h1> de la
+        page — la première chose annoncée.
+
+        `sr-only` est en positionnement absolu : rien ne bouge à l'écran.
+      */}
+      <span className="sr-only"> — </span>
+
       <span className="mt-1 flex items-center gap-2">
         <span
           aria-hidden

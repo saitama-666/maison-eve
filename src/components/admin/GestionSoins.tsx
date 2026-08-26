@@ -56,7 +56,7 @@ function soinVide(): Soin {
     prix: 0,
     supplementDomicile: 0,
     domicileDisponible: true,
-    image: '/soins/defaut.svg',
+    image: '/soins/defaut.jpg',
     bienfaits: [''],
     populaire: false,
     actif: true,
@@ -417,7 +417,7 @@ function EditeurSoin({
               label="Chemin du visuel"
               value={v.image}
               onChange={(e) => maj('image', e.target.value)}
-              aide="Fichier déposé dans public/, par exemple /soins/mon-soin.webp"
+              aide="Fichier déposé dans public/soins/, par exemple massage-argan.jpg"
             />
           </section>
 
@@ -464,7 +464,7 @@ function EditeurSoin({
           <div className="carte overflow-hidden">
             <div className="relative aspect-[4/3]">
               <Image
-                src={v.image || '/soins/defaut.svg'}
+                src={v.image || '/soins/defaut.jpg'}
                 alt=""
                 fill
                 sizes="340px"

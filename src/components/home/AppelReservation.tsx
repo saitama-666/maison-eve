@@ -45,7 +45,7 @@ export function AppelReservation() {
       </div>
 
       {/* --- Appel final --- */}
-      <BandeauImage src="/bandeaux/reservation.svg" hauteur="haut" voile="fort">
+      <BandeauImage src="/bandeaux/reservation.jpg" hauteur="haut" voile="fort" disposition="plein">
         <Reveal className="flex flex-col items-center text-center">
           <span className="surtitre text-champagnesoft">Prendre rendez-vous</span>
 

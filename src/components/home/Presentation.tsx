@@ -72,7 +72,7 @@ export function Presentation() {
         <div className="relative">
           <RevealVisuel className="relative aspect-[4/5] rounded-2xl">
             <Image
-              src="/bandeaux/institut.svg"
+              src="/bandeaux/institut.jpg"
               alt="La cabine de soin de MAISON EVE"
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"

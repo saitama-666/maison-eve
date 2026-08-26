@@ -456,6 +456,62 @@
     background: linear-gradient(180deg, transparent 25%, rgb(28 21 16 / 0.85) 100%);
   }
 
+  /* =================================================================
+     LES DEUX AUTRES CRANS DU VOILE — mesurés comme le premier.
+
+     ⚠️  NE PAS LES ÉCRIRE `bg-ink/35` ET `bg-ink/62`. C'est ce qu'ils
+         étaient, et c'était l'ANCIEN voile déjà condamné plus haut :
+         #33291f, la couleur trop claire. Mesuré sur photo blanche,
+         `bg-ink/35` donnait 1,77 et `bg-ink/62` 3,63 — très en dessous
+         du seuil de 4,5. Pire, l'échelle mentait : `moyen` (le seul
+         correct) était en réalité le PLUS sombre des trois, donc
+         demander « fort » AFFAIBLISSAIT le contraste.
+
+     Ici les trois crans partent de la même couleur sombre (#1c1510) et
+     vont vraiment en s'assombrissant. Mesures sur photo BLANCHE, le pire
+     cas possible, avec les deux jetons autorisés sur photo :
+
+                       onshell   champagnesoft
+       léger  0,68       5,36        4,61      ← minimum qui tient en AA
+       moyen  gradient   5,76        4,95
+       fort   0,86      10,28        8,85
+
+     Le cran « léger » est calé sur le minimum qui passe : en descendre
+     ne fait plus « respirer la photo », ça casse la lisibilité.
+     ================================================================= */
+  .voile-leger {
+    background: rgb(28 21 16 / 0.68);
+  }
+
+  .voile-fort {
+    background: rgb(28 21 16 / 0.86);
+  }
+
+  /* =================================================================
+     Bandeau sombre sous l'EN-TÊTE FIXE.
+
+     L'en-tête est transparent au repos, et ses liens sont en `onshell`
+     — clairs. Tant que le hero était une photo pleine largeur SOUS un
+     voile, ces liens tombaient sur du sombre et tout allait bien.
+
+     Depuis que le hero est en deux colonnes, la colonne image n'a plus
+     de voile, et les derniers liens de la barre (Galerie, Journal,
+     Contact) débordent dessus : du texte clair, 13 px, posé sur une
+     photo claire, sans rien entre les deux.
+
+     Ce dégradé rétablit un fond sombre sur la seule bande qui en a
+     besoin. Il démarre à l'opacité mesurée du cran « fort » (0,86) et
+     s'efface avant la fin, pour ne pas rogner la photo.
+     ================================================================= */
+  .voile-entete {
+    background: linear-gradient(
+      180deg,
+      rgb(28 21 16 / 0.86) 0%,
+      rgb(28 21 16 / 0.72) 52%,
+      transparent 100%
+    );
+  }
+
   /* Carte standard : blanche, filet clair, ombre chaude. */
   .carte {
     background-color: var(--color-card);
@@ -836,6 +892,30 @@
     transform: translateX(calc(var(--pilule-i) * (100% + var(--pilule-gap))));
     border-radius: 9999px;
     transition: transform 320ms var(--ease-out-expo);
+  }
+
+  /* =================================================================
+     TRANSITIONS DE VUE — le filtrage du catalogue.
+
+     `CatalogueSoins` appelle `document.startViewTransition()` quand le
+     navigateur le propose. Le navigateur photographie la page avant et
+     apres, apparie les elements qui portent le meme
+     `view-transition-name`, et les fait glisser. C'est le meme effet que
+     le `layout` de Framer Motion, en natif, pour zero octet — Framer
+     coutait 46 kB sur cette seule page.
+
+     Par defaut, le navigateur ajoute AUSSI un fondu croise sur toute la
+     page (la paire `root`). Sur un simple clic de filtre, voir la page
+     entiere clignoter est pire que pas d'animation du tout. On le coupe
+     donc, et on ne garde que le glissement des cartes nommees.
+
+     Rien ici n'est un prerequis : sans l'API, les cartes se replacent
+     instantanement. Aucun element ne part masque.
+     ================================================================= */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
   }
 
   /* --- Voile du menu lateral (back-office, mobile) ------------------ */

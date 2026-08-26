@@ -42,7 +42,7 @@ export function ADomicile() {
   return (
     <>
       {/* --- Bandeau d'accroche --- */}
-      <BandeauImage src="/bandeaux/domicile.svg" hauteur="moyen" align="gauche">
+      <BandeauImage src="/bandeaux/domicile.jpg" hauteur="moyen" align="gauche">
         <Reveal className="max-w-xl">
           <span className="surtitre text-champagnesoft">Soins à domicile</span>
           <h2 className="mt-5 font-display text-[2.25rem] leading-[1.1] text-onshell sm:text-[3rem]">
@@ -64,9 +64,9 @@ export function ADomicile() {
         <div className="mx-auto max-w-[1400px] px-5 sm:px-8">
           <div className="grid items-center gap-10 sm:gap-14 lg:grid-cols-2 lg:gap-20">
             {/* Visuel */}
-            <RevealVisuel className="relative order-2 aspect-[5/4] rounded-2xl lg:order-1">
+            <RevealVisuel className="relative order-2 aspect-[4/5] rounded-2xl lg:order-1">
               <Image
-                src="/bandeaux/equipe.svg"
+                src="/bandeaux/equipe.jpg"
                 alt="Une praticienne installe la table de massage"
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"

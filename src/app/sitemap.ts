@@ -23,6 +23,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const pagesFixes: MetadataRoute.Sitemap = [
     { url: `${site.url}/`, lastModified: maintenant, changeFrequency: 'weekly', priority: 1 },
     { url: `${site.url}/soins`, lastModified: maintenant, changeFrequency: 'weekly', priority: 0.9 },
+    // La page qui convertit. Elle était absente du plan alors que
+    // `robots.ts` l'autorise — on la déclarait indexable sans jamais la
+    // proposer. Seules ses sous-pages `/reservation/<id>`, personnelles,
+    // restent exclues.
+    {
+      url: `${site.url}/reservation`,
+      lastModified: maintenant,
+      changeFrequency: 'monthly',
+      priority: 0.9,
+    },
     { url: `${site.url}/a-propos`, lastModified: maintenant, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${site.url}/galerie`, lastModified: maintenant, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${site.url}/journal`, lastModified: maintenant, changeFrequency: 'weekly', priority: 0.7 },

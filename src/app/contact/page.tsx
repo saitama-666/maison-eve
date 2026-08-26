@@ -6,7 +6,7 @@ import { EnTetePage } from '@/components/layout/EnTetePage';
 import { Reveal } from '@/components/motion/Reveal';
 import { Squelette } from '@/components/ui/Bits';
 import { Icon } from '@/components/ui/Icon';
-import { contact, site, social } from '@/data/site';
+import { contact, estAComplete, site, social } from '@/data/site';
 
 export const metadata: Metadata = {
   title: 'Contact',
@@ -59,7 +59,7 @@ export default function PageContact() {
           </>
         }
         texte="Par téléphone, par WhatsApp ou par écrit. Choisissez ce qui vous arrange."
-        image="/bandeaux/contact.svg"
+        image="/bandeaux/contact.jpg"
         filAriane={[{ label: 'Contact' }]}
       />
 
@@ -145,7 +145,9 @@ export default function PageContact() {
                       ['facebook', social.facebook, 'Facebook'],
                       ['tiktok', social.tiktok, 'TikTok'],
                     ] as const
-                  ).map(([nom, url, label]) => (
+                  )
+                    .filter(([, url]) => !estAComplete(url))
+                    .map(([nom, url, label]) => (
                     <a
                       key={nom}
                       href={url}
@@ -154,9 +156,9 @@ export default function PageContact() {
                       aria-label={label}
                       className="inline-flex h-11 w-11 items-center justify-center rounded-full text-muted ring-1 ring-line transition-colors duration-[140ms] hover:text-champagne hover:ring-champagne"
                     >
-                      <Icon nom={nom} taille={18} />
-                    </a>
-                  ))}
+                        <Icon nom={nom} taille={18} />
+                      </a>
+                    ))}
                 </div>
               </Reveal>
             </div>

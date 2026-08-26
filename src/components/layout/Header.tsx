@@ -206,13 +206,17 @@ export function Header() {
               </Button>
             </span>
 
-            {/* --- Bouton menu (mobile) --- */}
+            {/* --- Bouton menu (mobile) ---
+                `aria-controls` n'est posé QUE quand le menu est ouvert :
+                `MenuMobile` renvoie `null` tant qu'il est fermé, donc
+                `#menu-mobile` n'existe pas et la relation pointerait dans
+                le vide. `aria-expanded` dit déjà l'état. */}
             <button
               type="button"
               onClick={() => setMenuOuvert((v) => !v)}
               aria-label={menuOuvert ? 'Fermer le menu' : 'Ouvrir le menu'}
               aria-expanded={menuOuvert}
-              aria-controls="menu-mobile"
+              {...(menuOuvert ? { 'aria-controls': 'menu-mobile' } : {})}
               className={cn(
                 'inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-[140ms] lg:hidden',
                 clair

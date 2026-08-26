@@ -61,7 +61,7 @@ function construireSoin(corps: Record<string, unknown>) {
       prix: nombre(corps.prix, 0, 0, 100_000),
       supplementDomicile: nombre(corps.supplementDomicile, 0, 0, 100_000),
       domicileDisponible: corps.domicileDisponible !== false,
-      image: nettoyer(corps.image, 240) || '/soins/defaut.svg',
+      image: nettoyer(corps.image, 240) || '/soins/defaut.jpg',
       bienfaits: Array.isArray(corps.bienfaits)
         ? (corps.bienfaits as unknown[]).slice(0, 10).map((b) => nettoyer(b, 140))
         : [],

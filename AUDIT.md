@@ -475,15 +475,40 @@ Un controle automatise (`audit_keyframes.py`) parcourt les 25 `@keyframes` du
 projet et signale toute image de depart masquante non assumee. **Resultat :
 aucune.**
 
-### Ce qui reste sur Framer, et pourquoi
+### Framer Motion : retire du projet (26/08/2026)
 
-| Fichier | Raison |
-|---|---|
-| `CatalogueSoins.tsx` | N'anime que la DISPOSITION (`layout`, `layoutId`) : les cartes glissent a leur nouvelle place quand on filtre. Rien n'y est masque, et il n'existe pas d'equivalent CSS propre pour une pastille de largeur variable. |
-| `src/components/admin/*` | Interface du personnel, derriere authentification. Meme motif, priorite moindre. |
+La passe precedente avait garde `CatalogueSoins.tsx` sur Framer, au motif
+qu'il n'animait que la disposition et qu'aucun equivalent CSS propre
+n'existait pour une pastille de largeur variable.
 
-`/soins` porte donc encore ~48 ko de Framer ; les autres pages de la vitrine
-n'en portent plus du tout.
+Le chiffre a tranche. `next build` :
+
+| Page | JS de page, avant | apres |
+|---|---|---|
+| `/soins` | **46,2 kB** | **2,69 kB** |
+| `/soins` — premier chargement | 162 kB | 121 kB |
+| toutes les autres pages vitrine | ~3 kB | inchange |
+
+Quarante-trois kilo-octets de JavaScript, sur la page qui vend, pour trois
+ornements — et pour une clientele majoritairement sur mobile.
+
+Les trois ornements sont remplaces, sans librairie :
+
+| Ornement | Avant | Maintenant |
+|---|---|---|
+| Pastille du filtre actif | `layoutId` partage | L'onglet actif porte son fond. Pas de glissement, et on ne perd rien d'utile. |
+| Curseur de la bascule « a domicile » | `motion.span layout` | `transition: left` en CSS |
+| Replacement des cartes au filtrage | `layout` + `AnimatePresence` | **API View Transitions** (`document.startViewTransition`), quand le navigateur l'a. Meme effet FLIP, en natif, pour zero octet. |
+
+`framer-motion` a ete desinstalle, et `src/lib/motion.ts` supprime : il
+n'exportait plus que des constantes deja dupliquees en variables CSS.
+
+La regle du projet vaut aussi pour ce remplacement : **l'animation est un
+ornement, jamais un prerequis**. Sans l'API View Transitions, le filtre
+s'applique instantanement ; rien ne part masque, rien n'attend une
+librairie pour devenir visible.
+
+Le back-office avait deja ete converti a la passe precedente.
 
 ### Ce que le volet de previsualisation permet, et ne permet pas
 

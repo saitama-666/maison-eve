@@ -117,7 +117,7 @@ export function FormulaireInscription() {
     <CadreAuth
       titre="Créer un compte"
       sousTitre="Pour retrouver vos rendez-vous et ne plus ressaisir vos adresses."
-      visuel="/bandeaux/equipe.svg"
+      visuel="/bandeaux/equipe.jpg"
       pied={
         <>
           Vous avez déjà un compte ?{' '}

@@ -66,7 +66,7 @@ export default async function PageSoins() {
           `à ${duree(Math.max(...actifs.map((s) => s.duree)))}, à partir de ` +
           `${prix(Math.min(...actifs.map((s) => s.prix)))}.`
         }
-        image="/bandeaux/relaxation.svg"
+        image="/bandeaux/relaxation.jpg"
         filAriane={[{ label: 'Soins' }]}
         action={
           <Button href="/reservation" variante="clair" fleche>

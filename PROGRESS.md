@@ -452,18 +452,42 @@ ligne** — ce sont des engagements commerciaux.
 Les trois étapes (`histoire`) sont vides : `[année]`, `[à compléter par Hamza]`. Elles
 s'affichent telles quelles sur `/a-propos`, avec un encart qui l'explique honnêtement.
 
-### Visuels — `public/`
+### Visuels — `public/` — ✅ FAIT le 26/08/2026
 
-Les **32 fichiers SVG** sont des **illustrations générées**, pas des photographies. Un encart
-sur `/galerie` le dit au visiteur. À remplacer par de vraies photos :
-`public/soins/`, `public/journal/`, `public/galerie/`, `public/bandeaux/`.
+Les 32 placeholders SVG ont été remplacés par **34 photographies** générées par Hamza.
+Le générateur `scripts/visuels.mjs` a été retiré (il aurait réécrit des SVG par-dessus)
+et les anciens fichiers archivés dans `projects/_svg_placeholders_maison_eve/`.
 
-Régénérer si besoin : `node scripts/visuels.mjs`.
+Ce sont des visuels **générés**, pas des photos de l'institut : l'encart de `/galerie` reste
+donc valable jusqu'à une vraie séance photo.
 
-### Icônes d'application — `src/app/manifest.ts`
+⚠️ **PIÈGE : FIRESTORE FAIT AUTORITÉ SUR LES CHEMINS D'IMAGE.**
+Corriger un chemin dans `src/data/services.ts` ne corrige **rien** en ligne : `catalogue.ts`
+ne se rabat sur le code que si la base est vide. Le jour du remplacement, les 44 références
+du code étaient passées en `.jpg` mais Firestore servait toujours les `.svg` supprimés — le
+HTML de production **préchargeait trois fichiers absents**. Une migration ciblée a réécrit
+les 14 champs `image` concernés (sans toucher aux tarifs).
 
-Aucune icône déclarée. Il faut un logo en PNG 192×192 et 512×512. Déclarer un fichier absent
-ferait échouer l'installation sur téléphone, d'où l'absence volontaire.
+`npm run audit:catalogue` compare désormais la base au disque et refuse de passer si un
+chemin ne correspond à aucun fichier.
+
+### Icônes d'application — ✅ FAIT le 26/08/2026
+
+Le lotus de `Logo.tsx` a été rastérisé avec `sharp` :
+`src/app/icon.svg` (favicon), `src/app/apple-icon.png` (180×180),
+et `public/icones/icone-{192,512}.png` plus une version *maskable* déclarées dans le
+manifeste. La version maskable porte une marge : Android rogne l'icône dans un cercle de
+80 %, et sans marge il mangeait les pétales.
+
+### Images de partage — ✅ FAIT le 26/08/2026
+
+Le site n'avait **aucune** `og:image` : un lien partagé sur WhatsApp — le canal principal de
+la clientèle — n'affichait qu'un rectangle vide. Il y a désormais `public/og.jpg` pour la
+marque et `public/og/<slug>.jpg` pour chacun des 10 soins, en 1200×630, avec le nom du soin
+écrit dessus. Le voile combine un dégradé vertical **et** horizontal pour que le contraste
+ne dépende pas de la photo : mesuré entre 5,00 et 10,55 sur les onze images.
+
+Régénérer après un changement de photo : `python scratchpad/og.py`.
 
 ### Pages légales
 

@@ -65,7 +65,7 @@ export default function PageAPropos() {
           </>
         }
         texte="Entre le spa d’hôtel et le hammam de quartier, il manquait quelque chose. C’est ce quelque chose qu’on essaie d’être."
-        image="/bandeaux/institut.svg"
+        image="/bandeaux/institut.jpg"
         filAriane={[{ label: 'À propos' }]}
       />
 
@@ -110,7 +110,7 @@ export default function PageAPropos() {
 
           <RevealVisuel className="relative aspect-[4/5] rounded-2xl">
             <Image
-              src="/bandeaux/equipe.svg"
+              src="/bandeaux/equipe.jpg"
               alt="L’équipe de MAISON EVE"
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
@@ -201,7 +201,7 @@ export default function PageAPropos() {
       </section>
 
       {/* ============ Nous trouver ============ */}
-      <BandeauImage src="/bandeaux/contact.svg" hauteur="moyen" align="gauche">
+      <BandeauImage src="/bandeaux/contact.jpg" hauteur="moyen" align="gauche">
         <Reveal className="max-w-xl">
           <span className="surtitre text-champagnesoft">Nous trouver</span>
           <h2 className="mt-5 font-display text-[2.25rem] leading-[1.1] text-onshell sm:text-[3rem]">

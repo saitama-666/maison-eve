@@ -3,7 +3,7 @@ import { Cormorant_Garamond, Jost, Parisienne } from 'next/font/google';
 
 import { Chrome } from '@/components/layout/Chrome';
 import { Providers } from '@/components/layout/Providers';
-import { contact, site } from '@/data/site';
+import { contact, estAComplete, site } from '@/data/site';
 import { getArticles, getCategories, getServices } from '@/lib/catalogue';
 
 import './globals.css';
@@ -23,9 +23,25 @@ import './globals.css';
 //   · Jost — l'interface et les textes courants. Géométrique et neutre.
 // =====================================================================
 
+// ⚠️  NE DECLARER QUE LES GRAISSES REELLEMENT RENDUES.
+//
+//     Chaque graisse x chaque style = un fichier .woff2 genere, et
+//     `next/font` en PRECHARGE une partie a chaque page. On declarait
+//     300/400/500/600 en normal ET italique pour Cormorant, plus un 200
+//     pour Jost : 380 kB de polices en 15 fichiers, dont 126 kB
+//     precharges au premier octet.
+//
+//     Releve dans le DOM rendu, sur toutes les pages : Cormorant ne sort
+//     qu'en 300 (normal et italique) et 400 ; Jost en 300, 400 et 500.
+//     Le 600 de Cormorant et le 200 de Jost n'apparaissaient nulle part —
+//     aucune classe `font-semibold`, `font-bold` ni `font-extralight`
+//     dans tout le depot.
+//
+//     Avant d'ajouter une graisse ici, verifier qu'une regle CSS la
+//     demande vraiment. Sinon c'est un fichier telecharge pour rien.
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600'],
+  weight: ['300', '400'],
   style: ['normal', 'italic'],
   variable: '--font-cormorant',
   display: 'swap',
@@ -40,7 +56,7 @@ const parisienne = Parisienne({
 
 const jost = Jost({
   subsets: ['latin'],
-  weight: ['200', '300', '400', '500'],
+  weight: ['300', '400', '500'],
   variable: '--font-jost',
   display: 'swap',
 });
@@ -73,11 +89,24 @@ export const metadata: Metadata = {
     siteName: site.name,
     title: `${site.fullName} — ${site.baseline}`,
     description: site.description,
+    // Sans cette image, un lien partagé sur WhatsApp n'affiche qu'un
+    // rectangle vide. C'est le canal principal de la clientèle, donc
+    // c'est le premier contact avec la marque pour beaucoup de gens.
+    // 1200×630 est le format qu'attendent WhatsApp, Facebook et LinkedIn.
+    images: [
+      {
+        url: '/og.jpg',
+        width: 1200,
+        height: 630,
+        alt: `${site.fullName} — ${site.baseline}`,
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: `${site.fullName} — ${site.baseline}`,
     description: site.description,
+    images: ['/og.jpg'],
   },
   robots: {
     index: true,
@@ -106,6 +135,23 @@ export const viewport: Viewport = {
  *     ne sera ajouté que quand de vrais avis existeront, et il devra
  *     alors être calculé depuis la collection `reviews`.
  */
+/**
+ * N'inclut la valeur QUE si elle est reellement renseignee.
+ *
+ * ⚠️  Sans ce filtre, les donnees structurees partaient chez Google avec
+ *     `streetAddress: "[adresse a completer]"` et le telephone de
+ *     remplissage. Publier un gabarit dans du schema.org, c'est declarer
+ *     a Google une coordonnee qui n'existe pas — la meme faute que les
+ *     avis inventes, en moins visible.
+ *
+ *     Un champ absent est neutre. Un champ faux ne l'est pas.
+ */
+function siRenseigne<T extends Record<string, unknown>>(valeur: string, objet: T): T | undefined {
+  return estAComplete(valeur) ? undefined : objet;
+}
+
+const adresseComplete = !estAComplete(contact.street) && !estAComplete(contact.postalCode);
+
 const donneesStructurees = {
   '@context': 'https://schema.org',
   '@type': 'DaySpa',
@@ -113,18 +159,21 @@ const donneesStructurees = {
   url: site.url,
   description: site.description,
   slogan: site.baseline,
-  email: contact.email,
-  telephone: contact.phone,
+  ...siRenseigne(contact.email, { email: contact.email }),
+  ...siRenseigne(contact.phone, { telephone: contact.phone }),
   priceRange: '$$',
   currenciesAccepted: site.currency,
+  // La ville et le pays sont vrais et utiles au referencement local ; on
+  // les garde meme sans la rue, et on n'ajoute la rue que si elle existe.
   address: {
     '@type': 'PostalAddress',
-    streetAddress: contact.street,
+    ...(adresseComplete
+      ? { streetAddress: contact.street, postalCode: contact.postalCode }
+      : {}),
     addressLocality: contact.city,
-    postalCode: contact.postalCode,
     addressCountry: contact.countryCode,
   },
-  areaServed: contact.homeServiceArea,
+  ...siRenseigne(contact.homeServiceArea, { areaServed: contact.homeServiceArea }),
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

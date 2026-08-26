@@ -60,6 +60,29 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   images: {
+    /**
+     * AVIF d'abord, WebP ensuite, JPEG en dernier recours.
+     *
+     * Le navigateur annonce ce qu'il accepte, Next sert le meilleur des
+     * trois. Sur nos photos de spa — beaucoup de tons chair et de
+     * degrades doux — l'AVIF pese environ moitie moins que le JPEG a
+     * qualite egale. Ca ne coute qu'un peu de calcul au PREMIER appel :
+     * le resultat est ensuite mis en cache.
+     */
+    formats: ['image/avif', 'image/webp'],
+
+    /**
+     * Duree de vie du cache d'optimisation : 30 jours.
+     *
+     * ⚠️  NOS FICHIERS NE SONT PAS VERSIONNES PAR LEUR NOM.
+     *     `/soins/massage-argan.jpg` reste `/soins/massage-argan.jpg`
+     *     apres remplacement. Deposer une nouvelle photo SOUS LE MEME NOM
+     *     ne se verra donc pas avant l'expiration.
+     *     Pour changer une photo : soit lui donner un nom neuf et mettre
+     *     a jour le champ `image` dans /admin, soit redeployer.
+     */
+    minimumCacheTTL: 2592000,
+
     remotePatterns: [
       { protocol: 'https', hostname: 'firebasestorage.googleapis.com' },
       { protocol: 'https', hostname: 'lh3.googleusercontent.com' },

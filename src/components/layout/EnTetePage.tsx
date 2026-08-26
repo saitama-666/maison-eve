@@ -30,13 +30,25 @@ import { cn } from '@/lib/utils';
 //      Le fond reste SOMBRE (`bg-shelldeep`) : les couleurs de texte ne
 //      changent pas d'une disposition à l'autre, et nos images claires
 //      ressortent par opposition.
+//
+//      « dessous » existe pour les pages dont la photo est en PAYSAGE —
+//      les articles du journal. Une photo large dans la colonne étroite
+//      de « côté » perdait 56 % de sa largeur. Ici le titre garde son
+//      fond uni, et la photo passe en pleine largeur sous le texte, à son
+//      vrai rapport. Le contraste reste une propriété du code.
+//
+//  ⚠️  RÈGLE GÉNÉRALE : la disposition suit l'ORIENTATION DU FICHIER.
+//      photo en portrait → « côté » ;  photo en paysage → « dessous ».
+//      Se tromper ne casse rien : ça recadre en silence, et une photo
+//      recadrée reste une photo plausible. C'est pour ça que personne ne
+//      le voit passer.
 // =====================================================================
 
 export function EnTetePage({
   surtitre,
   titre,
   texte,
-  image = '/bandeaux/relaxation.svg',
+  image = '/bandeaux/relaxation.jpg',
   filAriane,
   action,
   hauteur = 'moyen',
@@ -50,7 +62,7 @@ export function EnTetePage({
   filAriane?: readonly { label: string; href?: string }[];
   action?: ReactNode;
   hauteur?: 'court' | 'moyen';
-  disposition?: 'cote' | 'plein';
+  disposition?: 'cote' | 'plein' | 'dessous';
   alt?: string;
 }) {
   const contenu = (
@@ -89,9 +101,9 @@ export function EnTetePage({
       <h1
         className={cn(
           'mt-4 font-display leading-[1.05] text-onshell',
-          disposition === 'plein'
-            ? 'max-w-3xl text-[2.5rem] sm:text-[3.25rem] lg:text-[4rem]'
-            : 'text-[2.25rem] sm:text-[2.75rem] lg:text-[3.25rem]',
+          disposition === 'cote'
+            ? 'text-[2.25rem] sm:text-[2.75rem] lg:text-[3.25rem]'
+            : 'max-w-3xl text-[2.5rem] sm:text-[3.25rem] lg:text-[4rem]',
         )}
       >
         {titre}
@@ -104,6 +116,34 @@ export function EnTetePage({
       {action && <div className="mt-8">{action}</div>}
     </>
   );
+
+  // ------------------------------------------------------------------
+  //  Disposition « dessous » — le texte, puis la photo large en pleine
+  //  largeur. Pour les visuels en PAYSAGE.
+  // ------------------------------------------------------------------
+  if (disposition === 'dessous') {
+    return (
+      <section className="relative bg-shelldeep">
+        <div
+          className={cn(
+            'mx-auto max-w-[1400px] px-5 sm:px-8',
+            hauteur === 'court' ? 'pb-10 pt-28 sm:pb-12' : 'pb-12 pt-32 sm:pb-14',
+          )}
+        >
+          <div className="arrivee flex flex-col">{contenu}</div>
+        </div>
+
+        {/*
+          Les rapports suivent les fichiers du journal (≈16/9). Sur mobile
+          on ouvre un peu (16/10) parce qu'une bande trop plate n'a plus
+          de sujet lisible sur 390 px de large.
+        */}
+        <div className="relative aspect-[16/10] w-full sm:aspect-[16/9]">
+          <Image src={image} alt={alt} fill priority sizes="100vw" className="object-cover" />
+        </div>
+      </section>
+    );
+  }
 
   // ------------------------------------------------------------------
   //  Disposition « côté » — l'image dans sa colonne, le texte à côté.
@@ -144,6 +184,17 @@ export function EnTetePage({
               sizes="(max-width: 1024px) 100vw, 36vw"
               className="object-cover"
             />
+
+            {/*
+              L'en-tête du site est FIXE et transparent tant qu'on n'a pas
+              défilé, et ses derniers liens débordent sur cette colonne. Du
+              texte clair sur une photo claire, sans rien entre les deux :
+              mesuré à 1,16 de contraste. Ce dégradé leur rend un fond.
+
+              En dessous de `lg`, la colonne passe sous le texte et l'en-tête
+              ne la touche plus — inutile d'assombrir la photo pour rien.
+            */}
+            <div className="voile-entete pointer-events-none absolute inset-x-0 top-0 hidden h-[140px] lg:block" />
           </div>
         </div>
       </section>

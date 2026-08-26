@@ -52,10 +52,14 @@ export function BandeauImage({
     plein: 'min-h-[70svh] py-20 sm:min-h-[85svh] sm:py-28',
   } as const;
 
+  // La colonne image fait 38 % de 1400 px, soit ~532 px. Ces hauteurs
+  // fixent donc le rapport du cadre : 532/620 ≈ 0.86, tout près du 3:4
+  // de nos photos. Trop court, et le cadre devient carré — le portrait
+  // se fait rogner sur la hauteur sans que ça se voie.
   const HAUTEURS_COTE = {
-    court: 'py-14 lg:min-h-[340px] lg:py-16',
-    moyen: 'py-16 lg:min-h-[520px] lg:py-20',
-    haut: 'py-20 lg:min-h-[600px] lg:py-24',
+    court: 'py-14 lg:min-h-[420px] lg:py-16',
+    moyen: 'py-16 lg:min-h-[620px] lg:py-20',
+    haut: 'py-20 lg:min-h-[700px] lg:py-24',
     plein: 'py-20 lg:min-h-[70svh] lg:py-28',
   } as const;
 
@@ -65,10 +69,16 @@ export function BandeauImage({
     droite: 'items-end text-right',
   } as const;
 
+  // ⚠️  Les trois crans sont MESURÉS — voir le bloc « LES DEUX AUTRES
+  //     CRANS DU VOILE » dans `globals.css`. Ils étaient écrits
+  //     `bg-ink/35` et `bg-ink/62`, c'est-à-dire l'ancien voile déjà
+  //     condamné : sur une photo claire, le texte tombait à 1,77 et
+  //     3,63 de contraste. Et l'échelle mentait — « fort » était le plus
+  //     FAIBLE des trois. Ne pas revenir à des opacités improvisées.
   const VOILES = {
-    leger: 'bg-ink/35',
+    leger: 'voile-leger',
     moyen: 'voile',
-    fort: 'bg-ink/62',
+    fort: 'voile-fort',
   } as const;
 
   // ------------------------------------------------------------------

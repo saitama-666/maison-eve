@@ -51,8 +51,15 @@ export function CarteSoin({
         href={`/soins/${service.slug}`}
         className="carte zoom-carte flex h-full flex-col overflow-hidden transition-shadow duration-[240ms] hover:shadow-lift"
       >
-        {/* --- Visuel --- */}
-        <div className="relative aspect-[4/3] shrink-0 overflow-hidden">
+        {/* --- Visuel ---
+            ⚠️  4/5, PAS 4/3. Le cadre était en 4/3 (paysage) alors que les
+            onze photos de soins sont en 3:4 (portrait) : chaque carte de
+            la grille perdait 44 % de la hauteur de sa photo. En 4/5 le
+            recadrage tombe à 6 %.
+
+            Si les visuels changent un jour, c'est CE ratio qu'on ajuste,
+            pas les fichiers. */}
+        <div className="relative aspect-[4/5] shrink-0 overflow-hidden">
           <Image
             src={service.image}
             alt={service.nom}

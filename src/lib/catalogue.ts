@@ -47,7 +47,7 @@ function versService(id: string, d: Record<string, unknown>): Service | null {
     prix: typeof d.prix === 'number' ? d.prix : 0,
     supplementDomicile: typeof d.supplementDomicile === 'number' ? d.supplementDomicile : 0,
     domicileDisponible: d.domicileDisponible !== false,
-    image: typeof d.image === 'string' ? d.image : '/soins/defaut.svg',
+    image: typeof d.image === 'string' ? d.image : '/soins/defaut.jpg',
     bienfaits: Array.isArray(d.bienfaits) ? (d.bienfaits as string[]) : [],
     deroule: Array.isArray(d.deroule) ? (d.deroule as Service['deroule']) : [],
     populaire: d.populaire === true,
@@ -118,7 +118,7 @@ async function lireArticles(): Promise<readonly Article[]> {
           publieLe: typeof d.publieLe === 'string' ? d.publieLe : new Date().toISOString(),
           auteur: typeof d.auteur === 'string' ? d.auteur : 'MAISON EVE',
           lecture: typeof d.lecture === 'number' ? d.lecture : 4,
-          image: typeof d.image === 'string' ? d.image : '/journal/defaut.svg',
+          image: typeof d.image === 'string' ? d.image : '/journal/defaut.jpg',
           corps: Array.isArray(d.corps) ? (d.corps as Article['corps']) : [],
           publie: d.publie !== false,
         } satisfies Article;

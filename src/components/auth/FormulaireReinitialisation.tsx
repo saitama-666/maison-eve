@@ -67,7 +67,7 @@ export function FormulaireReinitialisation() {
     <CadreAuth
       titre="Mot de passe oublié"
       sousTitre="Indiquez votre adresse : on vous envoie un lien pour en choisir un nouveau."
-      visuel="/bandeaux/faq.svg"
+      visuel="/bandeaux/faq.jpg"
       pied={
         <>
           Vous vous en souvenez ?{' '}
