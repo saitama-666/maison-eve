@@ -1,6 +1,6 @@
 # MAISON EVE — Beauty & Spa · état d'avancement
 
-Site vitrine et réservation. Institut à Casablanca + soins à domicile.
+Site vitrine et réservation. Institut de beauté, hammam et spa à Témara.
 Dernière mise à jour : **20 août 2026**.
 
 Deux autres fichiers font autorité et doivent être lus avant toute reprise :
@@ -21,7 +21,7 @@ Deux autres fichiers font autorité et doivent être lus avant toute reprise :
 | **Stack** | Next.js 15 (App Router) · TypeScript strict · Tailwind v4 (CSS-first) · Firebase (Auth + Firestore) |
 | **Mouvement** | CSS (`animation-timeline`). Framer Motion seulement dans les zones interactives — voir §4 |
 | **Langue** | Français |
-| **Ville / devise** | Casablanca · dirham (MAD) |
+| **Ville / devise** | Témara · dirham (MAD) |
 | **Pages publiques** | 13 |
 | **Pages espace client** | 5 |
 | **Pages back-office** | 5 |
@@ -38,7 +38,7 @@ Deux autres fichiers font autorité et doivent être lus avant toute reprise :
 | Page | Route | État |
 |---|---|---|
 | Accueil | `/` | ✅ 10 sections |
-| Nos soins | `/soins` | ✅ filtrable par catégorie et par « à domicile » |
+| Nos soins | `/soins` | ✅ filtrable par catégorie, + grille des tarifs à la carte |
 | Fiche de soin | `/soins/[slug]` | ✅ pré-générée par soin |
 | À propos | `/a-propos` | ⚠️ contient des `[placeholder]` (voir §11) |
 | Galerie | `/galerie` | ⚠️ visuels provisoires |
@@ -503,7 +503,7 @@ Régénérer après un changement de photo : `python scratchpad/og.py`.
 ### 20 août 2026 — création complète
 
 Site créé de zéro d'après une maquette de spa fournie par Hamza (palette moka / crème,
-typographie script + serif). Adapté à MAISON EVE : institut + soins à domicile, Casablanca,
+typographie script + serif). Adapté à MAISON EVE : institut, hammam et spa à Témara,
 français, dirham.
 
 Livré : 23 pages, 6 routes API, back-office complet, tunnel de réservation en 5 étapes avec

@@ -1,7 +1,7 @@
 # MAISON EVE — Beauty & Spa
 
 Site de l'institut : vitrine, catalogue de soins, réservation en ligne, espace client et
-back-office. Institut à Casablanca **et** soins à domicile.
+back-office. Institut de beauté, hammam et spa à **Témara**.
 
 - **État d'avancement et `[placeholder]` à remplir** → [`PROGRESS.md`](./PROGRESS.md)
 - **Sécurité, modèle de menace, checklist de mise en ligne** → [`SECURITY.md`](./SECURITY.md)
