@@ -57,22 +57,29 @@ function versService(id: string, d: Record<string, unknown>): Service | null {
 }
 
 async function lireServices(): Promise<readonly Service[]> {
-  if (!adminReady) return servicesStatiques;
+  // Un soin desactive ne doit pas quitter le serveur. Les pages le filtrent
+  // deja a l'affichage, mais le catalogue complet part dans la charge utile
+  // RSC de chaque page : sans ce filtre, le texte des anciens soins
+  // continue de voyager cote client. Meme raison que pour `lireArticles`.
+  const repli = servicesStatiques.filter((s) => s.actif);
+
+  if (!adminReady) return repli;
 
   try {
     const snap = await adminDb().collection('services').get();
-    if (snap.empty) return servicesStatiques;
+    if (snap.empty) return repli;
 
     const liste = snap.docs
       .map((doc) => versService(doc.id, doc.data() as Record<string, unknown>))
       .filter((s): s is Service => s !== null)
+      .filter((s) => s.actif)
       .sort((a, b) => a.ordre - b.ordre);
 
-    return liste.length > 0 ? liste : servicesStatiques;
+    return liste.length > 0 ? liste : repli;
   } catch {
     // Panne Firestore : on sert le catalogue statique plutôt qu'une page
     // vide. Le visiteur ne voit pas la différence.
-    return servicesStatiques;
+    return repli;
   }
 }
 
