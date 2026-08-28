@@ -53,7 +53,7 @@ export function Hero() {
           rencontre le titre avant une image décorative. */}
       <div className="arrivee flex flex-col justify-center px-5 pb-16 pt-28 sm:px-8 sm:pb-20 sm:pt-32 lg:pr-14">
         <span className="surtitre text-champagnesoft">
-          Institut &amp; soins à domicile — {contact.city}
+          Hammam, spa &amp; beauté — {contact.city}
         </span>
 
         {/*

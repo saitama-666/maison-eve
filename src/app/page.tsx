@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 
-import { ADomicile } from '@/components/home/ADomicile';
 import { AppelReservation } from '@/components/home/AppelReservation';
 import { FaqAccueil } from '@/components/home/FaqAccueil';
 import { Hero } from '@/components/home/Hero';
@@ -24,7 +23,7 @@ import { getArticles, getServices } from '@/lib/catalogue';
 //   2. Présentation    — pourquoi la maison existe.
 //   3. Promesses       — les trois raisons de choisir.
 //   4. Soins           — ce qu'on peut réserver. Le cœur.
-//   5. À domicile      — ce qui nous distingue vraiment.
+//   5. (section « À domicile » retiree : Maison Eve n'en propose pas)
 //   6. Avis            — la preuve par les autres.
 //   7. Galerie         — la preuve par les yeux.
 //   8. FAQ             — les objections qui bloquent la réservation.
@@ -39,7 +38,7 @@ import { getArticles, getServices } from '@/lib/catalogue';
 // =====================================================================
 
 export const metadata: Metadata = {
-  title: `${site.fullName} — Institut et soins à domicile à ${contact.city}`,
+  title: `${site.fullName} — Institut, hammam et spa à ${contact.city}`,
   description: site.description,
   alternates: { canonical: '/' },
 };
@@ -79,7 +78,6 @@ export default async function Accueil() {
       <Presentation />
       <Promesses />
       <SoinsAccueil services={services} />
-      <ADomicile />
       <Temoignages />
       <Moments />
       <FaqAccueil />

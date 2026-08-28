@@ -96,7 +96,7 @@ export function Presentation() {
                 </defs>
                 <text className="fill-muted text-[8.5px] uppercase tracking-[0.3em]">
                   <textPath href={`#${ID_CERCLE}`} startOffset="0%">
-                    Beauty &amp; Spa · Maison Eve · Casablanca ·
+                    Beauty &amp; Spa · Maison Eve · Témara ·
                   </textPath>
                 </text>
               </svg>

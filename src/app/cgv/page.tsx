@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 import { AValider, Liste, PageTexte, Section } from '@/components/layout/PageTexte';
-import { contact, site } from '@/data/site';
+import { contact, estAComplete, lignesAdresse, site } from '@/data/site';
 
 export const metadata: Metadata = {
   title: 'Conditions générales',
@@ -16,7 +16,7 @@ export default function PageCgv() {
     <PageTexte
       titre="Conditions générales"
       miseAJour="20 août 2026"
-      intro={`Elles encadrent les prestations de ${site.fullName}, en institut comme à domicile.`}
+      intro={`Elles encadrent les prestations de ${site.fullName}, dans notre institut à ${contact.city}.`}
     >
       <AValider>
         Ce texte a été rédigé pour être clair et honnête, mais il n’a pas été relu par un
@@ -26,9 +26,9 @@ export default function PageCgv() {
 
       <Section titre="1. Qui nous sommes">
         <p>
-          {site.fullName}, institut de beauté et spa situé {contact.street}, {contact.postalCode}{' '}
-          {contact.city}, {contact.country}. Téléphone : {contact.phone}. E-mail :{' '}
-          {contact.email}.
+          {site.fullName}, institut de beauté et spa situé {lignesAdresse().join(', ')},{' '}
+          {contact.country}. Téléphone : {contact.phone}.
+          {!estAComplete(contact.email) && ` E-mail : ${contact.email}.`}
         </p>
         <AValider>
           Ajouter ici la forme juridique, le numéro de registre du commerce, l’identifiant
@@ -38,9 +38,8 @@ export default function PageCgv() {
 
       <Section titre="2. Les prestations">
         <p>
-          Nous proposons des soins de bien-être : massages, soins du visage, rituels du corps
-          et hammam. Ils se déroulent dans notre institut ou, pour les soins qui le permettent,
-          à votre domicile.
+          Nous proposons des soins de bien-être : hammam, massages, soins du visage, coiffure,
+          onglerie et épilation. Ils se déroulent dans notre institut.
         </p>
         <p>
           <strong className="font-sans font-medium text-ink">
@@ -75,10 +74,6 @@ export default function PageCgv() {
           tarif applicable est celui affiché au moment de la réservation.
         </p>
         <p>
-          Un soin à domicile fait l’objet d’un supplément de déplacement, indiqué avant la
-          confirmation.
-        </p>
-        <p>
           <strong className="font-sans font-medium text-ink">
             Le paiement se fait sur place, après le soin
           </strong>{' '}
@@ -91,27 +86,14 @@ export default function PageCgv() {
         <Liste
           items={[
             'Plus de 24 heures avant : annulation ou report libre, depuis votre espace client ou par téléphone.',
-            'Moins de 24 heures avant : appelez-nous. La praticienne a déjà bloqué son créneau, et pour un soin à domicile elle s’est parfois déjà organisée pour le déplacement.',
+            'Moins de 24 heures avant : appelez-nous. La praticienne a déjà bloqué son créneau et a parfois refusé une autre cliente sur ce créneau.',
             'Absence sans prévenir : nous nous réservons le droit de demander un acompte pour toute réservation ultérieure.',
             'De notre côté : si nous devons annuler, nous vous prévenons dès que possible et vous proposons un autre créneau en priorité.',
           ]}
         />
       </Section>
 
-      <Section titre="6. Les soins à domicile">
-        <p>
-          Nous apportons la table, le linge, les huiles et le matériel. De votre côté, nous
-          avons besoin d’un espace d’environ deux mètres sur deux, dans une pièce fermée et
-          chauffée, ainsi que d’un accès à un point d’eau.
-        </p>
-        <p>
-          La praticienne peut interrompre ou refuser une prestation si les conditions ne
-          permettent pas de travailler correctement ou en sécurité, ou en cas de comportement
-          déplacé. La séance est alors due.
-        </p>
-      </Section>
-
-      <Section titre="7. Santé et contre-indications">
+      <Section titre="6. Santé et contre-indications">
         <p>
           Vous devez nous signaler, au moment de la réservation, toute grossesse, opération
           récente, problème circulatoire ou cardiaque, affection cutanée, allergie et
@@ -124,7 +106,7 @@ export default function PageCgv() {
         </p>
       </Section>
 
-      <Section titre="8. Cartes cadeaux">
+      <Section titre="7. Cartes cadeaux">
         <p>
           Les cartes cadeaux sont nominatives ou au porteur, valables un an à compter de leur
           date d’émission, et non remboursables en espèces.
@@ -135,7 +117,7 @@ export default function PageCgv() {
         </AValider>
       </Section>
 
-      <Section titre="9. Responsabilité">
+      <Section titre="8. Responsabilité">
         <p>
           Nous mettons tout en œuvre pour que chaque soin se déroule dans de bonnes conditions.
           Notre responsabilité ne peut être engagée en cas de réaction liée à une information
@@ -147,7 +129,7 @@ export default function PageCgv() {
         </p>
       </Section>
 
-      <Section titre="10. Données personnelles">
+      <Section titre="9. Données personnelles">
         <p>
           Le traitement de vos données est décrit dans notre{' '}
           <a href="/confidentialite" className="souligne text-ink">
@@ -157,9 +139,12 @@ export default function PageCgv() {
         </p>
       </Section>
 
-      <Section titre="11. Réclamations">
+      <Section titre="10. Réclamations">
         <p>
-          Écrivez-nous à {contact.email} ou appelez le {contact.phone}. Nous répondons à toute
+          {estAComplete(contact.email)
+            ? `Appelez-nous au ${contact.phone}.`
+            : `Écrivez-nous à ${contact.email} ou appelez le ${contact.phone}.`}{' '}
+          Nous répondons à toute
           réclamation dans les meilleurs délais, et nous préférons de loin en parler qu’ignorer
           un problème.
         </p>

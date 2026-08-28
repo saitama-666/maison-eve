@@ -54,6 +54,12 @@ const PRODUITS = [
   },
 ];
 
+// Une etape n'est « redigee » que si ni son annee ni son texte ne sont
+// encore des gabarits entre crochets.
+const etapesRedigees = histoire.filter(
+  (e) => !/\[[^\]]*\]/.test(e.annee) && !/\[[^\]]*\]/.test(e.texte),
+);
+
 export default function PageAPropos() {
   return (
     <>
@@ -121,6 +127,10 @@ export default function PageAPropos() {
       </section>
 
       {/* ============ Les étapes ============ */}
+      {/* La frise ne s'affiche QUE si des etapes sont reellement redigees.
+          Une frise pleine de « [annee] » et de « [a completer] » annonce au
+          visiteur que le site n'est pas fini : c'est pire que pas de frise. */}
+      {etapesRedigees.length > 0 && (
       <section className="bg-canvas2 py-14 sm:py-20 lg:py-28">
         <div className="mx-auto max-w-[1400px] px-5 sm:px-8">
           <TitreSection
@@ -134,7 +144,7 @@ export default function PageAPropos() {
           />
 
           <RevealGroup intervalle={0.09} className="mx-auto mt-14 flex max-w-3xl flex-col">
-            {histoire.map((e) => (
+            {etapesRedigees.map((e) => (
               <RevealItem key={e.titre}>
                 <div className="flex gap-6 border-b border-line py-7 last:border-0">
                   <span className="w-24 shrink-0 font-display text-2xl text-champagne">
@@ -150,6 +160,7 @@ export default function PageAPropos() {
           </RevealGroup>
         </div>
       </section>
+      )}
 
       <Promesses />
 
@@ -205,11 +216,10 @@ export default function PageAPropos() {
         <Reveal className="max-w-xl">
           <span className="surtitre text-champagnesoft">Nous trouver</span>
           <h2 className="mt-5 font-display text-[2.25rem] leading-[1.1] text-onshell sm:text-[3rem]">
-            {contact.city}, et <span className="italic text-champagnesoft">chez vous</span>
+            Nous trouver à <span className="italic text-champagnesoft">{contact.city}</span>
           </h2>
           <p className="mt-5 text-[0.9375rem] leading-relaxed text-onshell">
-            {lignesAdresse().join(', ')}. Et pour les soins à domicile :{' '}
-            {contact.homeServiceArea}.
+            {lignesAdresse().join(', ')}. Ouvert tous les jours de 10h à 20h.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button href="/contact" variante="clair" fleche>

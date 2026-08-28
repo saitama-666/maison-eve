@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { AppelReservation } from '@/components/home/AppelReservation';
 import { EnTetePage } from '@/components/layout/EnTetePage';
 import { CatalogueSoins } from '@/components/soins/CatalogueSoins';
+import { TarifsALaCarte } from '@/components/soins/TarifsALaCarte';
 import { Button } from '@/components/ui/Button';
 import { site } from '@/data/site';
 import { getServices } from '@/lib/catalogue';
@@ -11,8 +12,8 @@ import { duree, prix } from '@/lib/utils';
 export const metadata: Metadata = {
   title: 'Nos soins — massages, hammam et visage',
   description:
-    'Le catalogue complet des soins MAISON EVE : massages, hammam et gommage, soins du visage, ' +
-    'rituels. En institut ou à domicile, avec les durées et les tarifs.',
+    'Le catalogue complet des soins MAISON EVE : hammam et spa, massages, soins du visage, ' +
+    'beauté et coiffure. Avec les durées et les tarifs, à la carte comprise.',
   alternates: { canonical: '/soins' },
 };
 
@@ -76,6 +77,7 @@ export default async function PageSoins() {
       />
 
       <CatalogueSoins />
+      <TarifsALaCarte />
       <AppelReservation />
     </>
   );

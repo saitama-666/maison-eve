@@ -196,10 +196,10 @@ export const articles: readonly Article[] = [
           'Buvez un grand verre d’eau, et évitez le sport dans la foulée.',
       },
     ],
-    publie: true,
+    publie: false, // Maison Eve ne propose pas de soins a domicile — depublie le 27/08/2026
   },
   {
-    slug: 'peau-seche-hiver-casablanca',
+    slug: 'peau-seche-hiver',
     titre: 'Peau qui tire en hiver : trois gestes qui changent tout',
     chapeau:
       'Le froid, le chauffage et l’eau calcaire assèchent plus que le soleil. ' +

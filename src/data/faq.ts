@@ -25,21 +25,20 @@ export const questions: readonly Question[] = [
     categorie: 'reservation',
   },
   {
-    q: 'Vous vous déplacez dans quels quartiers ?',
+    q: 'Vous êtes ouverts quels jours ?',
     r:
-      'Casablanca et sa périphérie. Au-delà, écrivez-nous : on regarde au cas par cas, ' +
-      'un supplément de déplacement peut s’appliquer.',
+      'Tous les jours, de 10h à 20h. Dimanche compris. Les créneaux de fin de journée et ' +
+      'du week-end partent vite : mieux vaut réserver à l’avance.',
     accueil: true,
-    categorie: 'domicile',
+    categorie: 'reservation',
   },
   {
-    q: 'Qu’est-ce que je dois préparer pour un soin à domicile ?',
+    q: 'Vous êtes où exactement ?',
     r:
-      'Deux mètres sur deux de place dans une pièce qui ferme et qui est chauffée. ' +
-      'On apporte la table, les serviettes, les huiles et la musique. Vous n’avez rien à installer, ' +
-      'et rien à ranger après.',
+      'Rue Rajaa, quartier Wifak, à Témara. On est à quelques minutes de Rabat. ' +
+      'Appelez-nous si vous cherchez la porte, on vous guide.',
     accueil: true,
-    categorie: 'domicile',
+    categorie: 'reservation',
   },
   {
     q: 'Comment se passe le paiement ?',
@@ -60,7 +59,7 @@ export const questions: readonly Question[] = [
   {
     q: 'Les hommes sont-ils acceptés ?',
     r:
-      'Oui, pour les massages et les soins du visage, en institut comme à domicile. ' +
+      'Oui, pour les massages et les soins du visage. ' +
       'Le hammam, lui, fonctionne par créneaux séparés — appelez-nous pour connaître les horaires.',
     accueil: false,
     categorie: 'soins',

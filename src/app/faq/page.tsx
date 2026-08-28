@@ -11,7 +11,7 @@ import { contact } from '@/data/site';
 export const metadata: Metadata = {
   title: 'Questions fréquentes',
   description:
-    'Réservation, soins à domicile, paiement, contre-indications, annulation : ' +
+    'Réservation, horaires, paiement, contre-indications, annulation : ' +
     'les réponses aux questions qu’on nous pose le plus.',
   alternates: { canonical: '/faq' },
 };
@@ -29,7 +29,6 @@ export const metadata: Metadata = {
 
 const GROUPES = [
   { cle: 'reservation', titre: 'Réserver', icone: 'calendrier' as const },
-  { cle: 'domicile', titre: 'Les soins à domicile', icone: 'maison' as const },
   { cle: 'soins', titre: 'Les soins', icone: 'lotus' as const },
   { cle: 'paiement', titre: 'Paiement et cadeaux', icone: 'etincelle' as const },
 ];

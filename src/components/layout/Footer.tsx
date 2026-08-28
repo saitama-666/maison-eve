@@ -64,13 +64,15 @@ export function Footer() {
                 {contact.phone}
               </a>
 
-              <a
-                href={`mailto:${contact.email}`}
-                className="flex items-center gap-2.5 transition-colors duration-[140ms] hover:text-onshell"
-              >
-                <Icon nom="email" taille={15} className="shrink-0 text-champagnesoft" />
-                {contact.email}
-              </a>
+              {!estAComplete(contact.email) && (
+                <a
+                  href={`mailto:${contact.email}`}
+                  className="flex items-center gap-2.5 transition-colors duration-[140ms] hover:text-onshell"
+                >
+                  <Icon nom="email" taille={15} className="shrink-0 text-champagnesoft" />
+                  {contact.email}
+                </a>
+              )}
             </address>
 
             <div className="flex flex-col gap-1.5 text-sm text-onshellmuted">

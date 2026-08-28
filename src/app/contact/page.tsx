@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: 'Contact',
   description:
     `Contacter ${site.name} : téléphone, e-mail, adresse de l’institut à ${contact.city}, ` +
-    'horaires et zone couverte pour les soins à domicile.',
+    'horaires et adresse de l’institut à Témara.',
   alternates: { canonical: '/contact' },
 };
 
@@ -40,13 +40,19 @@ export default function PageContact() {
       href: `https://wa.me/${contact.whatsapp}`,
       note: 'Pour envoyer une photo ou poser une question rapide.',
     },
-    {
-      icone: 'email' as const,
-      titre: 'Par e-mail',
-      valeur: contact.email,
-      href: `mailto:${contact.email}`,
-      note: 'Réponse en général dans la journée.',
-    },
+    // Une adresse e-mail non confirmee ne doit pas etre publiee : les
+    // messages envoyes a une boite inexistante sont perdus sans retour.
+    ...(estAComplete(contact.email)
+      ? []
+      : [
+          {
+            icone: 'email' as const,
+            titre: 'Par e-mail',
+            valeur: contact.email,
+            href: `mailto:${contact.email}`,
+            note: 'Réponse en général dans la journée.',
+          },
+        ]),
   ];
 
   return (
@@ -123,18 +129,6 @@ export default function PageContact() {
                     </div>
                   ))}
                 </dl>
-              </Reveal>
-
-              {/* Zone à domicile */}
-              <Reveal delai={0.12} className="carte p-6">
-                <h2 className="font-display text-2xl text-ink">Soins à domicile</h2>
-                <p className="mt-3 text-sm leading-relaxed text-muted">
-                  {contact.homeServiceArea}
-                </p>
-                <p className="mt-3 text-sm leading-relaxed text-muted">
-                  Au-delà, écrivez-nous : on regarde au cas par cas, un supplément de
-                  déplacement peut s’appliquer.
-                </p>
               </Reveal>
 
               {/* Réseaux */}

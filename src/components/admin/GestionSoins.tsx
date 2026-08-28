@@ -65,10 +65,10 @@ function soinVide(): Soin {
 }
 
 const CATEGORIES = [
+  { valeur: 'corps', label: 'Hammam & spa' },
   { valeur: 'massages', label: 'Massages' },
-  { valeur: 'visage', label: 'Visage' },
-  { valeur: 'corps', label: 'Corps & hammam' },
-  { valeur: 'rituels', label: 'Rituels' },
+  { valeur: 'visage', label: 'Soins du visage' },
+  { valeur: 'rituels', label: 'Beaute & coiffure' },
 ];
 
 export function GestionSoins() {

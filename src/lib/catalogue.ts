@@ -100,11 +100,16 @@ async function lireCategories(): Promise<readonly Categorie[]> {
 }
 
 async function lireArticles(): Promise<readonly Article[]> {
-  if (!adminReady) return articlesStatiques;
+  // Un article depublie ne doit JAMAIS quitter le serveur : sinon son texte
+  // voyage dans la charge utile RSC de chaque page, meme s'il n'est affiche
+  // nulle part. Le repli statique doit donc filtrer comme Firestore.
+  const repli = articlesStatiques.filter((a) => a.publie);
+
+  if (!adminReady) return repli;
 
   try {
     const snap = await adminDb().collection('journal').get();
-    if (snap.empty) return articlesStatiques;
+    if (snap.empty) return repli;
 
     const liste = snap.docs
       .map((doc) => {
@@ -123,11 +128,15 @@ async function lireArticles(): Promise<readonly Article[]> {
           publie: d.publie !== false,
         } satisfies Article;
       })
-      .filter((a): a is Article => a !== null);
+      .filter((a): a is Article => a !== null)
+      // Un article depublie ne doit pas quitter le serveur : sinon son
+      // texte voyage dans la charge utile RSC de CHAQUE page, meme s'il
+      // n'est affiche nulle part.
+      .filter((a) => a.publie);
 
-    return liste.length > 0 ? liste : articlesStatiques;
+    return liste.length > 0 ? liste : repli;
   } catch {
-    return articlesStatiques;
+    return repli;
   }
 }
 

@@ -74,7 +74,7 @@ export const histoire = [
     annee: '[année]',
     titre: 'L’idée',
     texte:
-      'Un constat simple : à Casablanca, on trouve des spas d’hôtel et des hammams de quartier, ' +
+      'Un constat simple : à Témara, on trouve des spas d’hôtel et des hammams de quartier, ' +
       'mais très peu d’endroits entre les deux. [à compléter par Hamza]',
   },
   {
@@ -84,9 +84,9 @@ export const histoire = [
   },
   {
     annee: '[année]',
-    titre: 'Les soins à domicile',
+    titre: 'La carte s’élargit',
     texte:
-      'La demande venait des clientes elles-mêmes : venir chez elles, avec la table et les huiles. ' +
+      'Au hammam et aux massages s’ajoutent la coiffure, l’onglerie et les soins du visage. ' +
       '[à compléter par Hamza]',
   },
 ] as const;

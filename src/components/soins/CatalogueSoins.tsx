@@ -70,6 +70,10 @@ export function CatalogueSoins() {
 
   const actifs = useMemo(() => services.filter((s) => s.actif), [services]);
 
+  // La bascule ne s'affiche que si au moins un soin est propose a domicile.
+  // Maison Eve n'en propose aucun : le filtre ne renverrait que du vide.
+  const domicileProposé = useMemo(() => actifs.some((s) => s.domicileDisponible), [actifs]);
+
   const visibles = useMemo(() => {
     let liste = actifs;
     if (filtre !== 'tous') liste = liste.filter((s) => s.categorie === filtre);
@@ -127,7 +131,9 @@ export function CatalogueSoins() {
           </div>
 
           {/* Bascule « à domicile » — la question la plus fréquente, donc
-              elle mérite un filtre à part plutôt qu'une catégorie de plus. */}
+              elle mérite un filtre à part plutôt qu'une catégorie de plus.
+              Masquée quand aucun soin n'est proposé à domicile. */}
+          {domicileProposé && (
           <button
             type="button"
             onClick={() =>
@@ -161,6 +167,7 @@ export function CatalogueSoins() {
             </span>
             Disponible à domicile
           </button>
+          )}
         </div>
 
         {/* --- Grille --- */}

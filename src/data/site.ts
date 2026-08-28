@@ -13,12 +13,12 @@ export const site = {
   name: 'MAISON EVE',
   fullName: 'MAISON EVE — Beauty & Spa',
   tagline: 'Beauty & Spa',
-  baseline: 'Le calme, chez vous ou chez nous.',
+  baseline: 'Votre refuge de détente, à Témara.',
   // 155 caracteres. Google tronque au-dela de ~160 : une description plus
   // longue est coupee en plein milieu d'une phrase dans les resultats.
   description:
-    'Institut de beauté et spa à Casablanca. Massages, soins du visage et rituels du hammam, ' +
-    'en institut ou chez vous. Praticiennes diplômées.',
+    'Institut de beauté et spa à Témara. Hammam traditionnel, massages, soins du visage, ' +
+    'coiffure et onglerie. Ouvert 7j/7, de 10h à 20h.',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
   locale: 'fr_MA',
   lang: 'fr',
@@ -28,32 +28,72 @@ export const site = {
 } as const;
 
 export const contact = {
-  // [placeholder] — adresse réelle de l'institut
-  street: '[adresse à compléter]',
-  city: 'Casablanca',
-  postalCode: '[code postal]',
+  // Adresse relevée sur leurs fiches publiques (Google Maps, Planizen).
+  street: 'Rue Rajaa, Wifak',
+  city: 'Témara',
+  postalCode: '[code postal]', // [placeholder] — à confirmer
   country: 'Maroc',
   countryCode: 'MA',
 
-  // [placeholder] — numéro réel. Le format doit rester international :
-  // une bonne partie de la clientèle appelle depuis l'étranger.
-  phone: '+212 6 00 00 00 00',
-  phoneHref: '+212600000000',
-  whatsapp: '212600000000',
+  // Numéros publiés dans leur bio Instagram et sur leurs visuels tarifaires.
+  phone: '+212 5 30 25 54 22',
+  phoneHref: '+212530255422',
+  whatsapp: '212641532754',
 
-  // [placeholder] — boîte réelle
-  email: 'contact@maison-eve.ma',
+  // [placeholder] — aucune adresse e-mail publique n'a ete trouvee chez
+  // Maison Eve. `contact@maison-eve.ma` etait une invention du gabarit :
+  // publier une boite qui n'existe pas, c'est perdre les messages qu'on
+  // y envoie. Masquee tant qu'elle n'est pas confirmee.
+  email: '[e-mail à compléter]',
 
-  // Horaires — [placeholder], à confirmer avec l'institut
+  // Horaires annoncés publiquement : 7j/7, 10h — 20h.
   hours: [
-    { day: 'Lundi — Vendredi', slot: '10h00 — 20h00' },
-    { day: 'Samedi', slot: '10h00 — 19h00' },
-    { day: 'Dimanche', slot: 'Sur rendez-vous' },
+    { day: 'Lundi — Dimanche', slot: '10h00 — 20h00' },
   ],
 
-  // Zone couverte pour les soins à domicile — [placeholder] à confirmer
-  homeServiceArea: 'Casablanca et périphérie (Ain Diab, Anfa, Maârif, Californie, Bouskoura)',
+  // Maison Eve ne propose PAS de soins à domicile. Champ conservé pour
+  // compatibilité, volontairement vide : rien ne doit s'afficher.
+  homeServiceArea: '',
 } as const;
+
+/**
+ * Informations legales obligatoires.
+ *
+ * ⚠️  AUCUNE NE DOIT ETRE INVENTEE. Un RC, un ICE ou un capital social sont
+ *     des identifiants officiels : les fabriquer, meme « pour la maquette »,
+ *     produit un faux document. Elles restent VIDES tant que l'institut ne
+ *     les a pas fournies.
+ *
+ *     Une chaine vide n'est pas affichee : la page des mentions legales
+ *     n'ecrit que les lignes reellement renseignees, et le bandeau
+ *     « A faire valider » liste automatiquement ce qui manque encore.
+ */
+export const legal = {
+  formeJuridique: '',
+  capital: '',
+  registreCommerce: '',
+  identifiantFiscal: '',
+  ice: '',
+  directeurPublication: '',
+  hebergeur: '',
+  hebergeurAdresse: '',
+  hebergeurTelephone: '',
+} as const;
+
+/** Les entrees legales encore vides, pour le bandeau d'avertissement. */
+export const legalManquant: readonly string[] = (
+  [
+    ['forme juridique', legal.formeJuridique],
+    ['capital social', legal.capital],
+    ['registre du commerce', legal.registreCommerce],
+    ['identifiant fiscal', legal.identifiantFiscal],
+    ['ICE', legal.ice],
+    ['directeur de la publication', legal.directeurPublication],
+    ['hébergeur du site', legal.hebergeur],
+  ] as const
+)
+  .filter(([, v]) => v.trim() === '')
+  .map(([label]) => label);
 
 /**
  * Vrai si la valeur est encore un gabarit, jamais renseigne.
@@ -84,7 +124,7 @@ export function estAComplete(valeur: string): boolean {
  *     ce qui est PIRE que de ne rien montrer : ça dit au visiteur que le
  *     site n'est pas fini, sur chaque page.
  *
- *     La ville et le pays, eux, sont vrais. On les garde : « Casablanca,
+ *     La ville et le pays, eux, sont vrais. On les garde : « Témara,
  *     Maroc » informe honnêtement, sans rien inventer.
  *
  *     Les pages légales n'utilisent PAS ce helper : leurs crochets sont

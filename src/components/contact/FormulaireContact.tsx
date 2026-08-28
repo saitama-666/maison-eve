@@ -35,7 +35,6 @@ import {
 const SUJETS = [
   { valeur: 'reservation', label: 'Une réservation' },
   { valeur: 'soins', label: 'Une question sur un soin' },
-  { valeur: 'domicile', label: 'Un soin à domicile' },
   { valeur: 'cadeau', label: 'Une carte cadeau' },
   { valeur: 'avis', label: 'Laisser un avis' },
   { valeur: 'suppression', label: 'Mes données personnelles' },

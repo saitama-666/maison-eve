@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 import { AValider, Liste, PageTexte, Section } from '@/components/layout/PageTexte';
-import { contact, site } from '@/data/site';
+import { contact, estAComplete, lignesAdresse, site } from '@/data/site';
 
 export const metadata: Metadata = {
   title: 'Politique de confidentialité',
@@ -52,8 +52,9 @@ export default function PageConfidentialite() {
 
       <Section titre="Qui est responsable">
         <p>
-          {site.fullName}, {contact.street}, {contact.postalCode} {contact.city},{' '}
-          {contact.country}. Pour toute question : {contact.email}.
+          {site.fullName}, {lignesAdresse().join(', ')}, {contact.country}. Pour toute
+          question :{' '}
+          {estAComplete(contact.email) ? contact.phone : contact.email}.
         </p>
       </Section>
 
@@ -153,7 +154,11 @@ export default function PageConfidentialite() {
       <Section titre="Vos droits">
         <p>
           Vous pouvez à tout moment demander à consulter vos données, les faire corriger, les
-          faire supprimer, ou vous opposer à leur utilisation. Écrivez à {contact.email} : nous
+          faire supprimer, ou vous opposer à leur utilisation.{' '}
+          {estAComplete(contact.email)
+            ? `Appelez le ${contact.phone}`
+            : `Écrivez à ${contact.email}`}{' '}
+          : nous
           répondons dans les meilleurs délais.
         </p>
         <p>

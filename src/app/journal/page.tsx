@@ -13,8 +13,8 @@ import { dateLongue } from '@/lib/utils';
 export const metadata: Metadata = {
   title: 'Le journal — conseils, rituels et ingrédients',
   description:
-    'Le hammam expliqué, l’huile d’argan décryptée, ce qu’il faut préparer pour un soin ' +
-    'à domicile. Nos conseils, sans promesse miracle.',
+    'Le hammam expliqué, l’huile d’argan décryptée, la peau en hiver. ' +
+    'Nos conseils, sans promesse miracle.',
   alternates: { canonical: '/journal' },
 };
 
