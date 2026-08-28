@@ -3,7 +3,7 @@ import { Cormorant_Garamond, Jost, Parisienne } from 'next/font/google';
 
 import { Chrome } from '@/components/layout/Chrome';
 import { Providers } from '@/components/layout/Providers';
-import { contact, estAComplete, site } from '@/data/site';
+import { contact, DEMONSTRATION, estAComplete, site } from '@/data/site';
 import { getArticles, getCategories, getServices } from '@/lib/catalogue';
 
 import './globals.css';
@@ -108,11 +108,34 @@ export const metadata: Metadata = {
     description: site.description,
     images: ['/og.jpg'],
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: { index: true, follow: true, 'max-image-preview': 'large' },
-  },
+  /*
+    ⚠️  C'EST CETTE BALISE QUI TIENT LA CONSIGNE, PAS `robots.txt`.
+
+        `robots.txt` dit si on peut ENTRER. Cette balise dit si on peut
+        INDEXER. Les deux sont pilotees par le meme `DEMONSTRATION`,
+        parce qu'elles se sont deja contredites une fois.
+
+        `follow: true` malgre le `noindex` : on VEUT que Google suive les
+        liens. Il atteint ainsi chaque page et y lit son propre `noindex`.
+        Avec `nofollow`, une page jamais visitee mais dont l'URL circule
+        pourrait etre listee toute nue.
+
+        `noimageindex` : nos photos sont des visuels generes presentes
+        comme l'institut de Maison Eve. Elles n'ont rien a faire dans
+        Google Images.
+  */
+  robots: DEMONSTRATION
+    ? {
+        index: false,
+        follow: true,
+        nocache: true,
+        googleBot: { index: false, follow: true, noimageindex: true },
+      }
+    : {
+        index: true,
+        follow: true,
+        googleBot: { index: true, follow: true, 'max-image-preview': 'large' },
+      },
   alternates: { canonical: '/' },
   formatDetection: { telephone: true, address: true, email: true },
 };

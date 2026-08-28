@@ -9,6 +9,22 @@
 //      Elles sont listées dans PROGRESS.md §11. Ne pas les inventer.
 // =====================================================================
 
+/**
+ * VRAI tant que le site est une DEMONSTRATION montree a un prospect.
+ *
+ * ⚠️  CE DRAPEAU PILOTE TROIS ENDROITS A LA FOIS, ET C'EST VOLONTAIRE :
+ *     `robots.ts`, les metadonnees de `layout.tsx`, et `sitemap.ts`.
+ *
+ *     Ils etaient reglages separement, et ils se sont contredits : le
+ *     `robots.txt` interdisait le passage pendant que chaque page criait
+ *     `index, follow`. Deux consignes opposees, et la mauvaise des deux
+ *     qui gagne — voir la note en tete de `robots.ts`.
+ *
+ *     Une seule source, donc. Le jour ou Maison Eve valide sa mise en
+ *     ligne : passer a `false` ICI, et les trois suivent.
+ */
+export const DEMONSTRATION = true;
+
 export const site = {
   name: 'MAISON EVE',
   fullName: 'MAISON EVE — Beauty & Spa',

@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-import { site } from '@/data/site';
+import { DEMONSTRATION, site } from '@/data/site';
 import { getArticles, getServices } from '@/lib/catalogue';
 
 // =====================================================================
@@ -17,6 +17,10 @@ import { getArticles, getServices } from '@/lib/catalogue';
 // =====================================================================
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // Un plan du site est une INVITATION a indexer. Tant que le site est une
+  // demonstration non validee par l'institut, on n'invite personne.
+  if (DEMONSTRATION) return [];
+
   const [services, articles] = await Promise.all([getServices(), getArticles()]);
   const maintenant = new Date();
 
