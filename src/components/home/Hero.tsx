@@ -67,8 +67,8 @@ export function Hero() {
         </h1>
 
         <p className="mt-6 max-w-lg text-[0.9375rem] leading-relaxed text-onshell sm:mt-7 sm:text-base">
-          Massages, soins du visage et rituels du hammam. Des praticiennes diplômées,
-          des produits naturels, et le choix de venir chez nous ou de nous recevoir chez vous.
+          Hammam, massages et soins du visage. Des praticiennes diplômées, des produits
+          naturels, et un lieu à Témara ouvert sept jours sur sept.
         </p>
 
         <div className="mt-8 flex w-full flex-col gap-3 sm:mt-9 sm:w-auto sm:flex-row">

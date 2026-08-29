@@ -163,7 +163,7 @@ export default async function PageArticle({ params }: Params) {
             <div className="carte flex flex-col items-center gap-5 p-8 text-center">
               <h2 className="font-display text-3xl text-ink">Envie d’essayer ?</h2>
               <p className="max-w-md text-sm leading-relaxed text-muted">
-                Réservez en quelques minutes, en institut ou chez vous. Vous ne réglez qu’après
+                Réservez en quelques minutes, en ligne ou par téléphone. Vous ne réglez qu’après
                 le soin.
               </p>
               <Button href="/reservation" fleche>

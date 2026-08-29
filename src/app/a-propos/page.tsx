@@ -15,8 +15,8 @@ import { contact, site, lignesAdresse } from '@/data/site';
 export const metadata: Metadata = {
   title: 'À propos — l’institut, l’équipe, les produits',
   description:
-    `Qui est ${site.name}, comment on travaille, quels produits on utilise, et pourquoi ` +
-    'nos praticiennes se déplacent aussi chez vous.',
+    `Qui est ${site.name}, comment on travaille, quels produits on utilise, et ce qui ` +
+    'distingue nos quatre formules de hammam.',
   alternates: { canonical: '/a-propos' },
 };
 

@@ -28,8 +28,8 @@ export function Footer() {
           <Reveal className="flex flex-col items-start gap-5">
             <Logo ton="sombre" taille="md" />
             <p className="max-w-xs text-sm leading-relaxed text-onshellmuted">
-              Institut de beauté et spa à {contact.city}. Massages, soins du visage et rituels
-              du corps — chez nous, ou chez vous.
+              Institut de beauté et spa à {contact.city}. Hammam, massages, soins du visage,
+              coiffure et onglerie. Ouvert 7j/7.
             </p>
             <Reseaux />
           </Reveal>

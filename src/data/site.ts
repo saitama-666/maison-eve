@@ -223,7 +223,7 @@ export const promesses = [
     icone: 'diplome' as const,
     titre: 'Praticiennes diplômées',
     texte:
-      'Chaque praticienne est formée et diplômée. Vous savez qui entre chez vous, ' +
+      'Chaque praticienne est formée et diplômée. Vous savez qui s’occupe de vous, ' +
       'et vous retrouvez la même personne d’un rendez-vous à l’autre si vous le souhaitez.',
   },
   {

@@ -41,7 +41,7 @@ export function Presentation() {
             <TexteAnime texte="Le calme," />
             <br />
             <span className="italic text-champagne">
-              <TexteAnime texte="chez vous ou chez nous." delai={0.12} />
+              <TexteAnime texte="au cœur de Témara." delai={0.12} />
             </span>
           </h2>
 
@@ -55,9 +55,9 @@ export function Presentation() {
 
           <Reveal delai={0.16}>
             <p className="max-w-md text-[0.9375rem] leading-relaxed text-muted">
-              Et parce que sortir n’est pas toujours possible, nos praticiennes se déplacent :
-              elles apportent la table, les serviettes chaudes et les huiles. Vous n’avez rien à
-              préparer, rien à ranger.
+              Quatre formules de hammam, cinq massages, les soins du visage, la coiffure et
+              l’onglerie. Tout se fait sur place, du gommage au vernis, sans avoir à courir
+              d’une adresse à l’autre.
             </p>
           </Reveal>
 
