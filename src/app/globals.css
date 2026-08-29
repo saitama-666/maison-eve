@@ -111,9 +111,30 @@
   --color-sage: #6f7f62;
   --color-rose: #b98a86;
   --color-danger: #b4423a;
+
+  /* =================================================================
+     TEXTE POSÉ SUR SON PROPRE APLAT TEINTÉ (pastilles de variation).
+
+     ⚠️  NE PAS Y METTRE `danger` NI `success` DIRECTEMENT.
+
+         Une pastille « −2 % » écrit du rouge sur un fond rouge à 12 %.
+         Mesuré : `danger` sur ce fond donne 3,96, et `success` 3,92 —
+         tous deux sous le seuil de 4,5. Ça se voit d'autant moins que
+         la pastille est petite et qu'on la lit en diagonale.
+
+         Ces deux teintes sont les mêmes couleurs assombries jusqu'à
+         passer : 4,79 pour le rouge, 4,97 pour le vert, mesurés sur
+         `canvas2` avec les opacités réellement utilisées.
+
+     En thème sombre, l'aplat est sombre : les couleurs de base y
+     passent déjà (4,75 et 5,57). Elles sont donc reprises telles quelles
+     plus bas — c'est le sens de ces jetons, pas une duplication inutile.
+     ================================================================= */
+  --color-dangertexte: #a03931;
   /* `success` et `warning` assombris : 4,33 et 3,30 sur creme, tous deux
      sous 4,5. Ils portent du texte de 14 px dans les encarts. */
   --color-success: #487244;
+  --color-successtexte: #3d6139;
   --color-warning: #8a6020;
 
   /* --- typographie -------------------------------------------------- */
@@ -212,6 +233,9 @@
   --color-rose: #d4a29e;
   --color-danger: #e0736a;
   --color-success: #7fb377;
+  /* Sur un aplat sombre, les couleurs de base passent : 4,75 et 5,57. */
+  --color-dangertexte: #e0736a;
+  --color-successtexte: #7fb377;
   --color-warning: #d9a04a;
 
   /* Les ombres chaudes du thème clair disparaissent sur fond sombre :

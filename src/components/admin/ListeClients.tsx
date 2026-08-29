@@ -112,10 +112,81 @@ export function ListeClients() {
         />
       ) : (
         <>
-          {/* Le tableau glisse horizontalement sur petit écran plutôt que
-              de déborder de la page. */}
-          <div className="carte overflow-x-auto">
-            <table className="w-full min-w-[720px] border-collapse text-sm">
+          {/* ============ Cartes, sous `lg` ============
+              ⚠️  UN TABLEAU QUI GLISSE N'EST PAS UN TABLEAU RESPONSIVE.
+
+                  La version précédente posait `min-w-[720px]` dans un
+                  `overflow-x-auto`. Sur 375 px, lire UNE cliente demandait
+                  de faire glisser la page horizontalement, colonne par
+                  colonne, puis de revenir pour la suivante. Le tableau ne
+                  débordait pas de la page — il était juste inutilisable.
+
+                  Cinq colonnes ne rentrent pas sur un téléphone. On
+                  change donc de forme, pas d'échelle : une carte par
+                  cliente, où chaque valeur porte son propre libellé. */}
+          <ul className="flex flex-col gap-3 lg:hidden">
+            {visibles.map((c) => (
+              <li key={c.id} className="carte p-4">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-champagnepale text-xs text-champagne">
+                    {initiales(c.prenom, c.nom, c.email[0]?.toUpperCase() ?? '?')}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-ink">{`${c.prenom} ${c.nom}`.trim() || '—'}</p>
+                    <a
+                      href={`mailto:${c.email}`}
+                      className="block truncate text-sm text-muted transition-colors duration-[140ms] hover:text-champagne"
+                    >
+                      {c.email}
+                    </a>
+                  </div>
+                  {c.lettre && (
+                    <span className="inline-flex shrink-0 items-center gap-1 text-xs text-champagne">
+                      <Icon nom="check" taille={11} />
+                      lettre
+                    </span>
+                  )}
+                </div>
+
+                {c.telephone && (
+                  <a
+                    href={`tel:${c.telephone}`}
+                    className="mt-2 inline-flex items-center gap-1.5 text-sm text-muted transition-colors duration-[140ms] hover:text-champagne"
+                  >
+                    <Icon nom="telephone" taille={13} />
+                    {c.telephone}
+                  </a>
+                )}
+
+                <dl className="mt-3 grid grid-cols-3 gap-2 border-t border-linesoft pt-3">
+                  <div>
+                    <dt className="text-[0.6875rem] uppercase tracking-[0.1em] text-faint">
+                      Rendez-vous
+                    </dt>
+                    <dd className="text-sm text-ink tabular">{c.nombreRdv}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[0.6875rem] uppercase tracking-[0.1em] text-faint">
+                      Dépensé
+                    </dt>
+                    <dd className="text-sm text-ink tabular">{prix(c.depense)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[0.6875rem] uppercase tracking-[0.1em] text-faint">
+                      Inscrite
+                    </dt>
+                    <dd className="text-sm text-muted tabular">
+                      {c.inscritLe ? dateCourte(c.inscritLe) : '—'}
+                    </dd>
+                  </div>
+                </dl>
+              </li>
+            ))}
+          </ul>
+
+          {/* ============ Tableau, à partir de `lg` ============ */}
+          <div className="carte hidden overflow-x-auto lg:block">
+            <table className="w-full border-collapse text-sm">
               <caption className="sr-only">
                 Liste des clientes inscrites, avec leur nombre de rendez-vous et le total
                 dépensé.

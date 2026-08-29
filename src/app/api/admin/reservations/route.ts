@@ -31,18 +31,45 @@ export async function GET(request: NextRequest) {
   // après le lancement téléchargerait toute la base.
   const limite = Math.min(Number(url.searchParams.get('limite') ?? 100), 300);
 
-  try {
-    let requete = adminDb()
-      .collection('reservations')
-      .orderBy('startAt', 'desc')
-      .limit(limite);
+  /*
+    Plage de dates, pour l'AGENDA du tableau de bord.
 
-    if (statut && (STATUTS_VALIDES as readonly string[]).includes(statut)) {
-      requete = adminDb()
-        .collection('reservations')
-        .where('status', '==', statut)
-        .orderBy('startAt', 'desc')
+    ⚠️  Sans elle, l'agenda ne peut pas fonctionner. La requête par défaut
+        trie par `startAt` DÉCROISSANT et coupe à 300 : elle rend donc les
+        300 rendez-vous les plus PROCHES dans le futur, ou les plus
+        récents. Demander « la semaine du 16 mars » en filtrant ces 300
+        côté navigateur marche tant que la base est petite, puis cesse de
+        marcher sans prévenir le jour où elle grossit — et la semaine
+        s'affiche vide alors qu'elle ne l'est pas.
+
+        C'est le genre de panne qui n'apparaît qu'en production, chez le
+        client, quand il a assez de rendez-vous pour que ça compte.
+  */
+  const dateValide = (v: string | null): Date | null => {
+    if (!v) return null;
+    const d = new Date(v);
+    return Number.isNaN(d.getTime()) ? null : d;
+  };
+  const du = dateValide(url.searchParams.get('du'));
+  const au = dateValide(url.searchParams.get('au'));
+
+  try {
+    const collection = adminDb().collection('reservations');
+    let requete;
+
+    if (du && au) {
+      // Sur une plage, on trie par date CROISSANTE : c'est l'ordre de
+      // lecture d'un agenda. Firestore impose que le premier `orderBy`
+      // porte sur le champ des inégalités.
+      requete = collection
+        .where('startAt', '>=', du)
+        .where('startAt', '<=', au)
+        .orderBy('startAt', 'asc')
         .limit(limite);
+    } else if (statut && (STATUTS_VALIDES as readonly string[]).includes(statut)) {
+      requete = collection.where('status', '==', statut).orderBy('startAt', 'desc').limit(limite);
+    } else {
+      requete = collection.orderBy('startAt', 'desc').limit(limite);
     }
 
     const snap = await requete.get();

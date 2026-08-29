@@ -3,18 +3,21 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
+import { Agenda } from '@/components/admin/Agenda';
 import { TitreAdmin } from '@/components/admin/CadreAdmin';
+import { AnneauLieu, BarresSoins, CourbeReservations } from '@/components/admin/Graphiques';
 import {
-  AnneauLieu,
-  BarresSoins,
-  CourbeReservations,
-  Tuile,
-  TuileMontant,
-} from '@/components/admin/Graphiques';
+  ChiffreTuile,
+  CourbeMinuscule,
+  GrilleTuiles,
+  PuceVariation,
+  TuileBord,
+} from '@/components/admin/TuilesBord';
 import { Encart, Squelette } from '@/components/ui/Bits';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { appelAdmin, ErreurAdmin } from '@/lib/admin';
+import { prix } from '@/lib/utils';
 
 // =====================================================================
 //  Tableau de bord du back-office.
@@ -40,6 +43,21 @@ type Apercu = {
   serie: { jour: string; nombre: number; montant: number }[];
   soinsPopulaires: { nom: string; nombre: number }[];
   repartitionLieu: { domicile: number; institut: number };
+
+  aujourdhui: {
+    nombre: number;
+    prochain: { heure: string; soin: string; cliente: string } | null;
+  };
+  dernier: { jour: string; heure: string } | null;
+  revenu: {
+    mois: number;
+    moisPrecedent: number;
+    /** `null` quand le mois précédent est à zéro : une variation sur une
+     *  base vide n'a pas de sens, et se lit pourtant comme un fait. */
+    variation: number | null;
+    courbe: number[];
+  };
+  demandes: { id: string; nom: string; extrait: string }[];
 };
 
 export function TableauBordAdmin() {
@@ -133,27 +151,101 @@ export function TableauBordAdmin() {
             </div>
           )}
 
-          {/* --- Chiffres clés --- */}
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            <Tuile
-              label="Rendez-vous à venir"
-              valeur={donnees.aVenir}
-              note={`${donnees.total} au total sur la période`}
-              ton="champagne"
-            />
-            <TuileMontant
-              label="Encaissé"
-              montant={donnees.encaisse}
-              note="soins terminés uniquement"
-              ton="succes"
-            />
-            <TuileMontant
-              label="Attendu"
-              montant={donnees.attendu}
-              note="rendez-vous à venir non annulés"
-            />
-            <Tuile label="Clientes inscrites" valeur={donnees.clients} note="comptes créés" />
-          </div>
+          {/* --- Les quatre tuiles de tête --- */}
+          <GrilleTuiles>
+            <TuileBord
+              titre="Rendez-vous du jour"
+              href="/admin/reservations"
+              libelleLien="Voir tous les rendez-vous"
+              contexte={
+                donnees.aujourdhui.prochain
+                  ? `Prochain : ${donnees.aujourdhui.prochain.heure} — ${donnees.aujourdhui.prochain.soin}${
+                      donnees.aujourdhui.prochain.cliente
+                        ? ` avec ${donnees.aujourdhui.prochain.cliente}`
+                        : ''
+                    }`
+                  : 'Plus rien de prévu aujourd’hui.'
+              }
+            >
+              <ChiffreTuile
+                valeur={String(donnees.aujourdhui.nombre).padStart(2, '0')}
+                legende={`rendez-vous aujourd’hui${
+                  donnees.aujourdhui.nombre > 1 ? '' : ''
+                }`}
+              />
+            </TuileBord>
+
+            <TuileBord
+              titre="Total des rendez-vous"
+              href="/admin/reservations"
+              libelleLien="Voir tous les rendez-vous"
+              contexte={
+                donnees.dernier
+                  ? `Dernier pris : ${donnees.dernier.jour} — ${donnees.dernier.heure}`
+                  : 'Aucun rendez-vous enregistré.'
+              }
+            >
+              <ChiffreTuile valeur={donnees.total} legende="sur les 180 derniers jours" />
+            </TuileBord>
+
+            <TuileBord
+              titre="Chiffre du mois"
+              href="/admin/reservations?statut=terminee"
+              libelleLien="Voir les soins terminés"
+              contexte={
+                <CourbeMinuscule
+                  valeurs={donnees.revenu.courbe}
+                  hausse={(donnees.revenu.variation ?? 0) >= 0}
+                />
+              }
+            >
+              <ChiffreTuile
+                valeur={prix(donnees.revenu.mois)}
+                legende={
+                  donnees.revenu.variation === null
+                    ? 'aucun encaissement le mois précédent'
+                    : `${donnees.revenu.variation >= 0 ? 'de plus' : 'de moins'} que le mois dernier`
+                }
+                puce={
+                  donnees.revenu.variation === null ? undefined : (
+                    <PuceVariation variation={donnees.revenu.variation} />
+                  )
+                }
+              />
+            </TuileBord>
+
+            <TuileBord
+              titre="Nouvelles demandes"
+              href="/admin/messages"
+              libelleLien="Voir les messages"
+              contexte={
+                donnees.demandes.length > 0 ? (
+                  <span className="flex flex-col gap-2">
+                    {donnees.demandes.slice(0, 2).map((d) => (
+                      <span key={d.id} className="block">
+                        <span className="block truncate text-[0.8125rem] text-ink">{d.nom}</span>
+                        <span className="block truncate text-[0.75rem] text-muted">
+                          « {d.extrait} »
+                        </span>
+                      </span>
+                    ))}
+                  </span>
+                ) : (
+                  'Aucun message en attente.'
+                )
+              }
+            >
+              <ChiffreTuile
+                valeur={donnees.messagesNonLus}
+                legende={`message${donnees.messagesNonLus > 1 ? 's' : ''} non lu${
+                  donnees.messagesNonLus > 1 ? 's' : ''
+                }`}
+              />
+            </TuileBord>
+          </GrilleTuiles>
+
+          {/* --- Agenda --- */}
+          <Agenda />
 
           {/* --- Courbe --- */}
           <section className="carte p-6">

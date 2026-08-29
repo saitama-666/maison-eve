@@ -2,7 +2,7 @@
 
 import { useId } from 'react';
 
-import { cn, dateCourte, prix } from '@/lib/utils';
+import { cn, dateCourte } from '@/lib/utils';
 
 // =====================================================================
 //  Graphiques faits main, en SVG.
@@ -289,50 +289,23 @@ function Legende({
   );
 }
 
-/** Tuile de chiffre clé. */
-export function Tuile({
-  label,
-  valeur,
-  note,
-  ton = 'neutre',
-}: {
-  label: string;
-  valeur: string | number;
-  note?: string;
-  ton?: 'neutre' | 'champagne' | 'succes' | 'attention';
-}) {
-  const TONS = {
-    neutre: 'text-ink',
-    champagne: 'text-champagne',
-    succes: 'text-success',
-    attention: 'text-warning',
-  } as const;
-
-  return (
-    <div className="surgir carte flex flex-col gap-1 p-5">
-      <span className="text-[0.6875rem] uppercase tracking-[0.16em] text-faint">{label}</span>
-      <span className={cn('font-display text-[2.25rem] leading-tight tabular', TONS[ton])}>
-        {valeur}
-      </span>
-      {note && <span className="text-xs text-muted">{note}</span>}
-    </div>
-  );
-}
-
-/** Montant formaté, pour les tuiles de chiffre d'affaires. */
-export function TuileMontant({
-  label,
-  montant,
-  note,
-  ton,
-}: {
-  label: string;
-  montant: number;
-  note?: string;
-  ton?: 'neutre' | 'champagne' | 'succes' | 'attention';
-}) {
-  return <Tuile label={label} valeur={prix(montant)} note={note} ton={ton} />;
-}
+// =====================================================================
+//  `Tuile` et `TuileMontant` ONT ÉTÉ RETIRÉES.
+//
+//  Elles portaient les chiffres clés du tableau de bord : un libellé en
+//  capitales, un nombre, une note. Deux raisons de les remplacer par
+//  `TuilesBord.tsx` :
+//
+//   · le nombre était en `font-display`. Cormorant Garamond dessine des
+//     chiffres elzéviriens — « 124 » s'y lit « I 24 ». Sur un titre c'est
+//     élégant, sur un chiffre qu'on consulte d'un coup d'œil c'est une
+//     faute de lecture ;
+//   · un chiffre seul ne dit rien. « 3 » ne devient utile qu'avec
+//     « prochain à 14 h, avec Salma ». La nouvelle tuile réserve une
+//     place à ce contexte, au-dessus du nombre.
+//
+//  Ne pas les réintroduire : ce fichier ne garde que les graphiques.
+// =====================================================================
 
 function ZoneVide({ message }: { message: string }) {
   return (
