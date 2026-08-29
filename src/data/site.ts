@@ -228,10 +228,10 @@ export const promesses = [
   },
   {
     icone: 'maison' as const,
-    titre: 'À domicile ou en institut',
+    titre: 'Tout au même endroit',
     texte:
-      'On installe la table, les serviettes chaudes et la musique chez vous. ' +
-      'Vous n’avez rien à préparer, et rien à ranger après.',
+      'Hammam, massage, soin du visage, coiffure et onglerie sous le même toit. ' +
+      'Un seul rendez-vous plutôt que trois adresses dans la journée.',
   },
   {
     icone: 'feuille' as const,

@@ -137,10 +137,28 @@
   --color-successtexte: #3d6139;
   --color-warning: #8a6020;
 
+  /* --- jetons du BACK-OFFICE ----------------------------------------
+     Ils sont declares ICI, dans `@theme`, uniquement pour que Tailwind
+     genere les classes correspondantes (`bg-selection`, `bg-rdvbleu`…).
+     Leurs vraies valeurs sont posees dans `[data-admin-theme]`, plus bas.
+     Un jeton absent de `@theme` ne produit AUCUNE classe : la couleur
+     serait definie et pourtant inutilisable, sans le moindre message.  */
+  --color-selection: #1c8fc4;
+  --color-selectionpale: #dcedf8;
+  --color-onselection: #ffffff;
+  --color-rdvbleu: #dceef9;
+  --color-rdvvert: #dcf2e3;
+  --color-rdvjaune: #fdf0d5;
+  --color-rdvrouge: #fbe3e0;
+
   /* --- typographie -------------------------------------------------- */
   --font-display: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
   --font-script: var(--font-parisienne), 'Parisienne', 'Cormorant Garamond', cursive;
   --font-sans: var(--font-jost), 'Jost', ui-sans-serif, system-ui, sans-serif;
+  /* Typo du back-office : une grotesque neutre, comme la maquette. Elle
+     n'est chargee que par `admin/layout.tsx`, donc la vitrine ne la
+     telecharge jamais. */
+  --font-admin: var(--font-inter), 'Inter', ui-sans-serif, system-ui, sans-serif;
 
   /* --- rayons ------------------------------------------------------- */
   --radius-xs: 2px;
@@ -176,6 +194,75 @@
 }
 
 /* =====================================================================
+   PALETTE DU BACK-OFFICE.
+
+   ⚠️  ELLE NE S'APPLIQUE QU'A L'ADMINISTRATION, et c'est voulu.
+
+       La vitrine garde le creme, le moka et le champagne : c'est
+       l'identite de Maison Eve, et elle doit rester intacte.
+
+       Le back-office, lui, suit la maquette validee par Hamza : fond
+       tres clair, cartes blanches, accent JAUNE pour la navigation,
+       BLEU pour la selection, et des aplats pastel pour les
+       rendez-vous. C'est un outil de travail, pas une vitrine — il n'a
+       pas a porter la meme charge decorative.
+
+       Le selecteur est `[data-admin-theme]`, pose par `ThemeAdmin` sur
+       `<html>` a l'entree de l'administration et RETIRE en sortie. Rien
+       ne fuit donc vers la boutique.
+
+   ⚠️  CE BLOC DOIT RESTER AVANT `[data-admin-theme='sombre']`.
+       Les deux selecteurs ont la meme specificite (0,1,0) : c'est
+       l'ordre du fichier qui decide. Le deplacer apres ferait gagner le
+       clair sur le sombre, et la bascule cesserait de fonctionner.
+   ===================================================================== */
+[data-admin-theme] {
+  /* --- Surfaces --- */
+  --color-canvas: #faf9f7;
+  --color-canvas2: #f4f3f1;
+  --color-card: #ffffff;
+  --color-line: #eae8e4;
+  --color-linesoft: #f1efec;
+
+  /* --- Textes --- */
+  --color-ink: #1c1917;
+  --color-inksoft: #44403c;
+  --color-muted: #6b6560;
+  --color-faint: #857e77;
+
+  /* --- Accent : le jaune de la maquette ---
+     `champagnepale` porte l'aplat (pastille active, survols), `champagne`
+     porte le trait et le texte. Le jaune vif est illisible en texte : on
+     descend donc a un ambre fonce, mesure a 5,9 sur blanc. */
+  --color-champagne: #a1620a;
+  --color-champagnepale: #fcd34d;
+  --color-champagnesoft: #fde68a;
+  --color-oncream: #ffffff;
+
+  /* --- Selection : le bleu de la maquette --- */
+  --color-selection: #1c8fc4;
+  --color-selectionpale: #dcedf8;
+  --color-onselection: #ffffff;
+
+  /* --- Aplats des rendez-vous, par statut --- */
+  --color-rdvbleu: #dceef9;
+  --color-rdvvert: #dcf2e3;
+  --color-rdvjaune: #fdf0d5;
+  --color-rdvrouge: #fbe3e0;
+
+  /* --- Etats --- */
+  --color-success: #15803d;
+  --color-successtexte: #15803d;
+  --color-warning: #a16207;
+  --color-danger: #dc2626;
+  --color-dangertexte: #b91c1c;
+
+  /* Cartes moins arrondies que la vitrine : un outil dense se lit mieux
+     avec des angles nets. */
+  --radius-lg: 16px;
+}
+
+/* =====================================================================
    Thème sombre — RÉSERVÉ AU BACK-OFFICE.
 
    La vitrine reste claire : le crème et le champagne SONT l'identité de
@@ -197,6 +284,17 @@
    ===================================================================== */
 
 [data-admin-theme='sombre'] {
+  /* Equivalents sombres des jetons de la maquette. */
+  --color-selection: #38a8dd;
+  --color-selectionpale: #16303d;
+  --color-onselection: #08151b;
+  --color-rdvbleu: #16303d;
+  --color-rdvvert: #17301f;
+  --color-rdvjaune: #332813;
+  --color-rdvrouge: #331b19;
+  --color-champagne: #f2c14e;
+  --color-champagnepale: #4a3a12;
+  --color-oncream: #1c1917;
   --color-canvas: #171310;
   --color-canvas2: #1f1a16;
   --color-card: #221c18;
