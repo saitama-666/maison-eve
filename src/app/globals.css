@@ -143,7 +143,7 @@
      Leurs vraies valeurs sont posees dans `[data-admin-theme]`, plus bas.
      Un jeton absent de `@theme` ne produit AUCUNE classe : la couleur
      serait definie et pourtant inutilisable, sans le moindre message.  */
-  --color-selection: #1c8fc4;
+  --color-selection: #0f6f9c;
   --color-selectionpale: #dcedf8;
   --color-onselection: #ffffff;
   --color-rdvbleu: #dceef9;
@@ -228,7 +228,11 @@
   --color-ink: #1c1917;
   --color-inksoft: #44403c;
   --color-muted: #6b6560;
-  --color-faint: #857e77;
+  /* Mesure : #857e77 donnait 4,00 sur blanc et 3,61 sur `canvas2` —
+     sous le seuil dans les deux cas. Les initiales des jours du
+     calendrier et les rendez-vous annules s'en servent, en 11 px.
+     #6f6862 passe partout : 5,48 sur blanc, 4,94 sur `canvas2`. */
+  --color-faint: #6f6862;
 
   /* --- Accent : le jaune de la maquette ---
      `champagnepale` porte l'aplat (pastille active, survols), `champagne`
@@ -239,8 +243,11 @@
   --color-champagnesoft: #fde68a;
   --color-oncream: #ffffff;
 
-  /* --- Selection : le bleu de la maquette --- */
-  --color-selection: #1c8fc4;
+  /* --- Selection : le bleu de la maquette ---
+     Le bleu vif de la maquette (#1c8fc4) ne donne que 3,64 avec du blanc
+     dessus : le numero du jour choisi passait sous le seuil. Assombri
+     jusqu'a 5,56, ce qui reste le meme bleu a l'oeil. */
+  --color-selection: #0f6f9c;
   --color-selectionpale: #dcedf8;
   --color-onselection: #ffffff;
 
@@ -260,6 +267,37 @@
   /* Cartes moins arrondies que la vitrine : un outil dense se lit mieux
      avec des angles nets. */
   --radius-lg: 16px;
+
+}
+
+/* =====================================================================
+   TYPOGRAPHIE DU BACK-OFFICE.
+
+   ⚠️  ON REDIRIGE LES JETONS, ON NE TOUCHE PAS AUX CLASSES.
+
+       Le back-office ecrit `font-display` a vingt et un endroits. Plutot
+       que de les reprendre un a un — et d'en oublier au prochain
+       composant —, on change ce que le jeton DESIGNE. « Display » veut
+       dire « la police de titre de ce contexte » ; dans un outil de
+       travail, c'est Inter, pas une serif.
+
+       Consequence a connaitre : dans /admin, la classe `font-display`
+       ne rend PAS Cormorant. C'est voulu.
+
+   ⚠️  CETTE CLASSE VA SUR LE MEME ELEMENT QUE `inter.variable`, ET PAS
+       SUR `<html>`.
+
+       Une propriete personnalisee est calculee SUR L'ELEMENT OU ELLE EST
+       DECLAREE. `--font-inter` est pose par `next/font` sur le div du
+       layout admin ; le declarer sur `<html>` — ou la variable n'existe
+       pas — donne une substitution vide, et toute la police retombe sur
+       celle du systeme. Erreur commise une fois, corrigee ici.
+   ===================================================================== */
+.typo-admin {
+  --font-display: var(--font-inter), 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  font-family: var(--font-sans);
 }
 
 /* =====================================================================
@@ -347,6 +385,20 @@
 /* Le fond de page suit le thème du back-office. */
 [data-admin-theme] body {
   background-color: var(--color-canvas);
+  font-weight: 400;
+}
+
+/* La vitrine met ses titres en 300 : une serif fine, c'est son style. Une
+   grotesque en 300 sur un tableau de bord parait delavee et se lit mal a
+   petite taille. */
+[data-admin-theme] h1,
+[data-admin-theme] h2,
+[data-admin-theme] h3,
+[data-admin-theme] h4,
+[data-admin-theme] h5,
+[data-admin-theme] h6 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 /* =====================================================================

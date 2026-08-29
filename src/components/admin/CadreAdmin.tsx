@@ -64,10 +64,17 @@ const ICONES: Record<string, NomIcone> = {
   '/admin/messages': 'email',
 };
 
-/** Libellés courts, pour la barre du bas. « Tableau de bord » n'y tient pas. */
+/**
+ * Libelles courts, pour la barre du bas.
+ *
+ * Cinq onglets sur 375 px laissent ~70 px chacun. « Tableau de bord » et
+ * « Rendez-vous » n'y tiennent pas : mesures, ils se coupaient en
+ * « Rendez-vo… », ce qui ne veut plus rien dire. Chaque libelle ici doit
+ * tenir ENTIER — un onglet tronque est pire qu'un onglet sans texte.
+ */
 const COURTS: Record<string, string> = {
-  '/admin': 'Bord',
-  '/admin/reservations': 'Rendez-vous',
+  '/admin': 'Résumé',
+  '/admin/reservations': 'Agenda',
   '/admin/soins': 'Soins',
   '/admin/clients': 'Clientes',
   '/admin/messages': 'Messages',
@@ -110,36 +117,7 @@ export function CadreAdmin({ children }: { children: ReactNode }) {
             <LogoLigne />
           </Link>
 
-          {/* Pastilles — à partir de `lg` seulement. En dessous, c'est la
-              barre du bas qui porte la navigation. */}
-          <nav aria-label="Administration" className="hidden flex-1 justify-center lg:flex">
-            <ul className="flex items-center gap-1">
-              {navAdmin.map((l) => {
-                const actif = estActif(chemin, l.href, l.exact);
-                return (
-                  <li key={l.href}>
-                    <Link
-                      href={l.href}
-                      aria-current={actif ? 'page' : undefined}
-                      className={cn(
-                        'flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-colors duration-[140ms]',
-                        actif
-                          ? 'bg-champagnepale text-ink'
-                          : 'text-muted hover:bg-canvas2 hover:text-ink',
-                      )}
-                    >
-                      <Icon
-                        nom={ICONES[l.href] ?? 'tableau'}
-                        taille={16}
-                        className={actif ? 'text-champagne' : undefined}
-                      />
-                      {l.label}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
+          <NavPastilles chemin={chemin} />
 
           <div className="ml-auto shrink-0 lg:ml-0">
             <MenuProfil
@@ -162,36 +140,91 @@ export function CadreAdmin({ children }: { children: ReactNode }) {
         <div className="mx-auto max-w-[1500px]">{children}</div>
       </main>
 
-      {/* ============ Barre d'onglets, mobile ============ */}
-      <nav
-        aria-label="Administration"
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-card/95 backdrop-blur-md lg:hidden"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-      >
-        <ul className="flex items-stretch">
-          {navAdmin.map((l) => {
-            const actif = estActif(chemin, l.href, l.exact);
-            return (
-              <li key={l.href} className="min-w-0 flex-1">
-                <Link
-                  href={l.href}
-                  aria-current={actif ? 'page' : undefined}
+      <NavOnglets chemin={chemin} />
+    </div>
+  );
+}
+
+/**
+ * Navigation en pastilles — a partir de `lg`.
+ *
+ * La pastille active porte l'aplat JAUNE de la maquette, avec du texte
+ * sombre dessus. Le groupe entier vit dans un cadre discret, ce qui le
+ * detache de la barre sans avoir a le colorer.
+ */
+export function NavPastilles({ chemin }: { chemin: string }) {
+  return (
+    <nav aria-label="Administration" className="hidden flex-1 justify-center lg:flex">
+      <ul className="flex items-center gap-1 rounded-full border border-line bg-card p-1">
+        {navAdmin.map((l) => {
+          const actif = estActif(chemin, l.href, l.exact);
+          return (
+            <li key={l.href}>
+              <Link
+                href={l.href}
+                aria-current={actif ? 'page' : undefined}
+                className={cn(
+                  'flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-colors duration-[140ms]',
+                  actif
+                    ? 'bg-champagnepale font-medium text-ink'
+                    : 'text-muted hover:bg-canvas2 hover:text-ink',
+                )}
+              >
+                <Icon nom={ICONES[l.href] ?? 'tableau'} taille={16} />
+                {l.label}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  );
+}
+
+/**
+ * Barre d'onglets du bas — en dessous de `lg`.
+ *
+ * `fixed` : le contenu doit donc reserver `pb-24`, sinon sa fin passe
+ * dessous. `env(safe-area-inset-bottom)` tient compte de la barre
+ * gestuelle des iPhone recents.
+ */
+export function NavOnglets({ chemin }: { chemin: string }) {
+  return (
+    <nav
+      aria-label="Administration"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-card/95 backdrop-blur-md lg:hidden"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+    >
+      <ul className="flex items-stretch">
+        {navAdmin.map((l) => {
+          const actif = estActif(chemin, l.href, l.exact);
+          return (
+            <li key={l.href} className="min-w-0 flex-1">
+              <Link
+                href={l.href}
+                aria-current={actif ? 'page' : undefined}
+                className={cn(
+                  'flex h-full min-h-[58px] flex-col items-center justify-center gap-1 px-1 py-2 transition-colors duration-[140ms]',
+                  actif ? 'text-champagne' : 'text-muted',
+                )}
+              >
+                <span
                   className={cn(
-                    'flex h-full min-h-[58px] flex-col items-center justify-center gap-1 px-1 py-2 transition-colors duration-[140ms]',
-                    actif ? 'text-champagne' : 'text-muted',
+                    'flex h-7 w-11 items-center justify-center rounded-full transition-colors duration-[140ms]',
+                    actif && 'bg-champagnepale',
                   )}
                 >
-                  <Icon nom={ICONES[l.href] ?? 'tableau'} taille={19} />
-                  <span className="w-full truncate text-center text-[0.6875rem] leading-none">
-                    {COURTS[l.href] ?? l.label}
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-    </div>
+                  <Icon nom={ICONES[l.href] ?? 'tableau'} taille={18} />
+                </span>
+                <span className="w-full truncate text-center text-[0.6875rem] leading-none">
+                  {COURTS[l.href] ?? l.label}
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
   );
 }
 

@@ -56,12 +56,29 @@ type Reservation = {
   client: { prenom: string; nom: string };
 };
 
+/**
+ * Aplats des rendez-vous, repris de la maquette : des pastels francs,
+ * un par statut.
+ *
+ * Le statut n'est PAS porte par la seule couleur — chaque bloc affiche
+ * aussi son libelle. Une gerante daltonienne, ou un ecran mal calibre,
+ * ne doivent pas empecher de distinguer un rendez-vous confirme d'un
+ * rendez-vous annule.
+ */
 const TONS: Record<string, string> = {
-  'en-attente': 'bg-warning/12 text-ink ring-warning/30',
-  confirmee: 'bg-champagnepale/70 text-ink ring-champagne/30',
-  terminee: 'bg-success/12 text-ink ring-success/25',
-  annulee: 'bg-canvas2 text-faint ring-line line-through',
-  absente: 'bg-danger/10 text-ink ring-danger/25',
+  'en-attente': 'bg-rdvjaune text-ink ring-champagne/25',
+  confirmee: 'bg-rdvbleu text-ink ring-selection/20',
+  terminee: 'bg-rdvvert text-ink ring-success/20',
+  annulee: 'bg-canvas2 text-faint ring-line',
+  absente: 'bg-rdvrouge text-ink ring-danger/20',
+};
+
+const LIBELLE_STATUT: Record<string, string> = {
+  'en-attente': 'À confirmer',
+  confirmee: 'Confirmé',
+  terminee: 'Terminé',
+  annulee: 'Annulé',
+  absente: 'Non honoré',
 };
 
 /**
@@ -351,9 +368,9 @@ function CalendrierMois({
               className={cn(
                 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg text-sm tabular transition-colors duration-[140ms]',
                 choisi
-                  ? 'bg-champagne text-oncream'
+                  ? 'bg-selection text-onselection'
                   : cejour
-                    ? 'text-champagne ring-1 ring-inset ring-champagne/45'
+                    ? 'text-selection ring-1 ring-inset ring-selection/55'
                     : 'text-muted hover:bg-canvas2 hover:text-ink',
               )}
             >
@@ -383,9 +400,15 @@ function GrilleSemaine({
 
   return (
     <div className="overflow-x-auto">
-      <div className="min-w-[760px]">
+      {/* 1120 px minimum, soit ~150 px par jour : c'est la largeur en
+          dessous de laquelle « Salma Bennani » se coupe en « Salma Ben… ».
+          Sur un grand ecran tout tient ; sur un ecran moyen la grille
+          glisse horizontalement — la maquette fait pareil, son 18 mars
+          est coupe au bord. Mieux vaut faire glisser sept jours lisibles
+          que tout montrer illisible. */}
+      <div className="min-w-[1120px]">
         {/* En-tête des jours */}
-        <div className="grid grid-cols-[64px_repeat(7,1fr)] border-b border-linesoft bg-champagnepale/25">
+        <div className="grid grid-cols-[64px_repeat(7,1fr)] border-b border-linesoft bg-champagnepale/30">
           <span />
           {jours.map((j) => {
             const p = partiesLocales(j);
@@ -395,7 +418,7 @@ function GrilleSemaine({
                 key={p.jour + '-' + p.mois}
                 className={cn(
                   'border-l border-linesoft px-2 py-2.5 text-center text-[0.8125rem]',
-                  cejour ? 'text-champagne' : 'text-muted',
+                  cejour ? 'font-medium text-ink' : 'text-inksoft',
                 )}
               >
                 {p.jour} {MOIS[p.mois - 1].slice(0, 4).toLowerCase()}., {JOURS[indexLundi(p.jourSemaine)]}
@@ -442,18 +465,37 @@ function GrilleSemaine({
                       key={r.id}
                       href={`/admin/reservations?ref=${encodeURIComponent(r.reference)}`}
                       className={cn(
-                        'absolute inset-x-1 overflow-hidden rounded-lg p-2 text-left ring-1 ring-inset transition-opacity duration-[140ms] hover:opacity-85',
+                        'absolute inset-x-1 flex gap-2 overflow-hidden rounded-lg p-2 text-left ring-1 ring-inset transition-opacity duration-[140ms] hover:opacity-85',
                         TONS[r.status] ?? TONS.confirmee,
                       )}
                       style={{ top: Math.max(haut, 0), height: h }}
                     >
-                      <p className="truncate text-xs font-medium">
-                        {r.client.prenom} {r.client.nom}
-                      </p>
-                      <p className="truncate text-[0.6875rem] opacity-80">{r.serviceNom}</p>
-                      <p className="mt-0.5 truncate text-[0.6875rem] tabular opacity-70">
-                        {heureCourte(r.startAt)} – {heureCourte(r.endAt)}
-                      </p>
+                      {/* Pastille d'icone, comme la maquette. Elle disparait
+                          sous 50 px de haut : a cette taille elle mangerait
+                          la place du nom, qui est l'information utile. */}
+                      {h >= 50 && (
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-card/70">
+                          <Icon nom="lotus" taille={12} />
+                        </span>
+                      )}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-xs font-medium">
+                          {r.client.prenom} {r.client.nom}
+                        </span>
+                        <span className="block truncate text-[0.6875rem] opacity-80">
+                          {r.serviceNom}
+                        </span>
+                        <span className="mt-0.5 block truncate text-[0.6875rem] tabular opacity-70">
+                          {heureCourte(r.startAt)} – {heureCourte(r.endAt)}
+                        </span>
+                        {/* La note de la cliente, seulement si le bloc est
+                            assez haut pour l'accueillir sans rogner le reste. */}
+                        {r.notes && h >= 110 && (
+                          <span className="mt-1.5 block rounded-md bg-card/60 p-1.5 text-[0.6875rem] italic leading-snug opacity-80">
+                            « {r.notes} »
+                          </span>
+                        )}
+                      </span>
                     </Link>
                   );
                 })}
@@ -526,9 +568,9 @@ function BandeJours({
             className={cn(
               'flex min-w-[52px] shrink-0 flex-col items-center gap-0.5 rounded-xl px-2 py-2 transition-colors duration-[140ms]',
               choisi
-                ? 'bg-champagne text-oncream'
+                ? 'bg-selection text-onselection'
                 : cle === cleAujourdhui
-                  ? 'text-champagne ring-1 ring-inset ring-champagne/40'
+                  ? 'text-selection ring-1 ring-inset ring-selection/50'
                   : 'text-muted hover:bg-canvas2',
             )}
           >
@@ -537,7 +579,7 @@ function BandeJours({
             <span
               className={cn(
                 'mt-0.5 h-1.5 w-1.5 rounded-full',
-                nb === 0 ? 'bg-transparent' : choisi ? 'bg-oncream' : 'bg-champagne',
+                nb === 0 ? 'bg-transparent' : choisi ? 'bg-onselection' : 'bg-selection',
               )}
             />
           </button>
@@ -574,7 +616,12 @@ function ListeDuJour({ jour, rendezVous }: { jour: Date; rendezVous: Reservation
                   TONS[r.status] ?? TONS.confirmee,
                 )}
               >
-                <span className="w-[52px] shrink-0 text-sm tabular">{heureCourte(r.startAt)}</span>
+                <span className="flex shrink-0 flex-col items-center gap-1.5">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-card/70">
+                    <Icon nom="lotus" taille={15} />
+                  </span>
+                  <span className="text-xs tabular">{heureCourte(r.startAt)}</span>
+                </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium">
                     {r.client.prenom} {r.client.nom}
@@ -583,6 +630,7 @@ function ListeDuJour({ jour, rendezVous }: { jour: Date; rendezVous: Reservation
                   <span className="mt-0.5 block text-xs tabular opacity-70">
                     {heureCourte(r.startAt)} – {heureCourte(r.endAt)}
                     {r.lieu === 'domicile' && ' · à domicile'}
+                    {LIBELLE_STATUT[r.status] && ` · ${LIBELLE_STATUT[r.status]}`}
                   </span>
                   {/* La note de la cliente : c'est elle qui dit pourquoi
                       elle vient, et souvent ce qu'il faut préparer. */}
