@@ -45,14 +45,14 @@ export function Logo({ ton = 'clair', taille = 'md', marque = true, className }:
     >
       {marque && <LotusMark taille={t.mark} className={sombre ? 'text-champagnesoft' : 'text-champagne'} />}
 
-      <span className={cn('script', t.nom, marque && 'mt-1')}>Maison Zahra</span>
+      <span className={cn('script', t.nom, marque && 'mt-1')}>Maison Eve</span>
 
       {/*
         Séparateur pour les lecteurs d'écran UNIQUEMENT.
 
         Les deux lignes du logo sont deux éléments distincts, sans espace
         entre eux dans le texte. Le nom accessible sortait donc collé :
-        « Maison ZahraBeauty & Spa ». Sur l'accueil, c'est le <h1> de la
+        « Maison EveBeauty & Spa ». Sur l'accueil, c'est le <h1> de la
         page — la première chose annoncée.
 
         `sr-only` est en positionnement absolu : rien ne bouge à l'écran.
@@ -114,7 +114,7 @@ export function LogoLigne({ ton = 'clair', className }: { ton?: 'clair' | 'sombr
   const sombre = ton === 'sombre';
   return (
     <span className={cn('inline-flex items-baseline gap-2', sombre ? 'text-onshell' : 'text-ink', className)}>
-      <span className="script text-2xl">Maison Zahra</span>
+      <span className="script text-2xl">Maison Eve</span>
       <span
         className={cn(
           'font-sans text-[0.625rem] uppercase tracking-[0.2em] sm:tracking-[0.34em]',

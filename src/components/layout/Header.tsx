@@ -119,7 +119,7 @@ export function Header() {
           {/* --- Marque --- */}
           <Link
             href="/"
-            aria-label="MAISON ZAHRA — retour à l’accueil"
+            aria-label="MAISON EVE — retour à l’accueil"
             className="shrink-0 transition-opacity duration-[140ms] hover:opacity-70"
           >
             <LogoLigne ton={clair ? 'sombre' : 'clair'} />

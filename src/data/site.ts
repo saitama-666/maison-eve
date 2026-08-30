@@ -26,8 +26,8 @@
 export const DEMONSTRATION = true;
 
 export const site = {
-  name: 'MAISON ZAHRA',
-  fullName: 'MAISON ZAHRA — Beauty & Spa',
+  name: 'MAISON EVE',
+  fullName: 'MAISON EVE — Beauty & Spa',
   tagline: 'Beauty & Spa',
   baseline: 'Votre refuge de détente, à Témara.',
   // 155 caracteres. Google tronque au-dela de ~160 : une description plus
