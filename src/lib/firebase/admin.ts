@@ -50,16 +50,37 @@ function nettoyerCle(brut: string): string {
  * pas de fichier a designer : on y utilise `FIREBASE_SERVICE_ACCOUNT_KEY`,
  * stockee comme variable sensible.
  */
+/**
+ * Panne de CONFIGURATION du serveur — pas un probleme d'identite.
+ *
+ * ⚠️  ELLE DOIT RESTER DISTINGUABLE D'UN JETON INVALIDE.
+ *
+ *     Les deux remontaient dans le meme `catch`, qui repondait
+ *     « Session expiree. Reconnectez-vous. » Resultat vecu : le fichier
+ *     de cle etait introuvable, et le back-office invitait a se
+ *     reconnecter — encore et encore, sans jamais dire la verite. On
+ *     peut y passer une heure.
+ *
+ *     Une erreur de configuration n'est pas la faute de la personne
+ *     connectee : elle merite un 503 et un journal explicite, jamais une
+ *     invitation a refaire ce qui vient d'echouer.
+ */
+export class ErreurConfigurationAdmin extends Error {}
+
 function depuisFichier(): string | undefined {
   const chemin = process.env.GOOGLE_APPLICATION_CREDENTIALS;
   if (!chemin) return undefined;
   try {
     return readFileSync(chemin, 'utf8');
   } catch {
-    throw new Error(
+    throw new ErreurConfigurationAdmin(
       'GOOGLE_APPLICATION_CREDENTIALS designe « ' +
         chemin +
-        ' », mais ce fichier est introuvable ou illisible.',
+        ' », introuvable ou illisible depuis ' +
+        process.cwd() +
+        '. Un chemin RELATIF se resout depuis le dossier de travail du' +
+        ' processus, pas depuis la racine du projet — et Next peut etre' +
+        ' lance depuis un dossier parent. Mettre un chemin ABSOLU.',
     );
   }
 }
@@ -73,14 +94,14 @@ function credentials() {
     try {
       parsed = JSON.parse(raw);
     } catch {
-      throw new Error(
+      throw new ErreurConfigurationAdmin(
         'La cle de compte de service est illisible. ' +
           'Soit FIREBASE_SERVICE_ACCOUNT_KEY contient le JSON sur une seule ligne, ' +
           'soit GOOGLE_APPLICATION_CREDENTIALS designe un fichier .json valide.',
       );
     }
     if (!parsed.private_key || !parsed.client_email || !parsed.project_id) {
-      throw new Error(
+      throw new ErreurConfigurationAdmin(
         'FIREBASE_SERVICE_ACCOUNT_KEY est incomplète ' +
           '(private_key, client_email ou project_id manquant).',
       );
@@ -136,15 +157,32 @@ function projetEmule(): string {
   );
 }
 
-/** Permet aux routes API de répondre 503 proprement au lieu de planter. */
-export const adminReady = Boolean(
-  modeEmulateur ||
-    process.env.FIREBASE_SERVICE_ACCOUNT_KEY ||
-    process.env.GOOGLE_APPLICATION_CREDENTIALS ||
-    (process.env.FIREBASE_ADMIN_PROJECT_ID &&
-      process.env.FIREBASE_ADMIN_CLIENT_EMAIL &&
-      process.env.FIREBASE_ADMIN_PRIVATE_KEY),
-);
+/**
+ * Vrai si les identifiants se CHARGENT vraiment.
+ *
+ * ⚠️  NE PAS REVENIR A UN SIMPLE TEST DE PRESENCE DES VARIABLES.
+ *
+ *     La version precedente se contentait de
+ *     `Boolean(process.env.GOOGLE_APPLICATION_CREDENTIALS)` : la variable
+ *     etait posee, donc `adminReady` valait `true`, donc la garde laissait
+ *     passer — et l'echec survenait plus loin, au premier
+ *     `verifyIdToken`, ou il etait traduit en « Session expiree ».
+ *
+ *     Une variable posee ne prouve rien. On tente donc reellement la
+ *     lecture, une fois, au chargement du module.
+ */
+export const adminReady: boolean = (() => {
+  if (modeEmulateur) return true;
+  try {
+    return credentials() !== null;
+  } catch (e) {
+    console.error(
+      '[admin] identifiants illisibles — les routes /api/admin sont hors service. ' +
+        (e instanceof Error ? e.message : String(e)),
+    );
+    return false;
+  }
+})();
 
 let cache: App | null = null;
 
@@ -229,9 +267,33 @@ export async function requireUser(
   try {
     const decoded = await verifyIdToken(token);
     return { uid: decoded.uid, email: decoded.email ?? '' };
-  } catch {
-    return Response.json({ error: 'Session expirée. Reconnectez-vous.' }, { status: 401 });
+  } catch (e) {
+    return echecJeton(e);
   }
+}
+
+/**
+ * Traduit un echec de verification de jeton en reponse HTTP.
+ *
+ * ⚠️  DEUX CAUSES, DEUX REPONSES. Ne pas les refondre en une seule.
+ *
+ *     · Le SERVEUR est mal configure (cle introuvable, JSON invalide) :
+ *       la personne connectee n'y peut rien. Se reconnecter ne changera
+ *       rien, et le lui suggerer la fait tourner en rond. 503, et le
+ *       detail part dans les journaux du serveur.
+ *     · Le JETON est invalide ou expire : la, se reconnecter repare
+ *       vraiment. 401.
+ *
+ *     Les deux repondaient « Session expiree ». C'est ce qui a fait
+ *     croire a une panne d'authentification alors que le fichier de cle
+ *     n'etait simplement pas la ou on le cherchait.
+ */
+function echecJeton(e: unknown): Response {
+  if (e instanceof ErreurConfigurationAdmin) {
+    console.error('[admin] configuration hors service : ' + e.message);
+    return Response.json({ error: 'Service momentanément indisponible.' }, { status: 503 });
+  }
+  return Response.json({ error: 'Session expirée. Reconnectez-vous.' }, { status: 401 });
 }
 
 /**
@@ -258,7 +320,7 @@ export async function requireAdmin(
       return Response.json({ error: 'Accès réservé à l’administration.' }, { status: 403 });
     }
     return { uid: decoded.uid, email: decoded.email ?? '' };
-  } catch {
-    return Response.json({ error: 'Session expirée. Reconnectez-vous.' }, { status: 401 });
+  } catch (e) {
+    return echecJeton(e);
   }
 }
